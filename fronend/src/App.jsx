@@ -34,7 +34,7 @@ function App() {
         <BrowserRouter>
         <div className="min-h-screen flex flex-col">
           <Navbar darkMode={darkMode} toggleTheme={toggleTheme} />
-        <main className="flex-grow pt-16">
+        <main className="flex-grow pt-4">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<ProductList />} />
