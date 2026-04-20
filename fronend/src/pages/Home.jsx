@@ -78,7 +78,7 @@ const Home = () => {
             <Tags className="w-6 h-6 text-primary" />
             <h2 className="text-xl font-bold dark:text-white">Categories</h2>
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {CATEGORIES.map(cat => {
               const Icon = CATEGORY_ICONS[cat.name] || Tags;
               return (
