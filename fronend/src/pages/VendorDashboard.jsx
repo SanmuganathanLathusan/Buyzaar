@@ -111,32 +111,37 @@ const VendorDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-background-dark flex flex-col md:flex-row pb-12 md:pb-0">
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white dark:bg-cardDark border-r border-gray-100 dark:border-gray-800 md:h-screen md:sticky top-16 md:top-20 hidden md:flex flex-col">
-        <div className="p-6">
+      {/* Sidebar / Top Nav on Mobile */}
+      <aside className="w-full md:w-64 bg-white dark:bg-cardDark border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 md:h-screen md:sticky md:top-16 lg:top-20 flex flex-col pt-2 md:pt-0">
+        <div className="p-4 md:p-6 hidden md:block">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Vendor Portal</h2>
           <p className="text-xs text-gray-500 mt-1">{user?.businessName || user?.name || 'Vendor Store'}</p>
         </div>
         
-        <nav className="flex-1 px-4 space-y-2">
-          <button className="w-full flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary rounded-md font-medium">
-            <TrendingUp size={20} /> Dashboard
+        <nav className="flex-none flex overflow-x-auto md:flex-1 md:flex-col px-2 md:px-4 py-2 md:py-0 md:space-y-2 gap-2 scrollbar-none">
+          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 bg-primary/10 text-primary rounded-md font-medium text-sm md:text-base">
+            <TrendingUp size={18} className="md:w-5 md:h-5" /> <span className="whitespace-nowrap">Dashboard</span>
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
-            <Package size={20} /> Products
+          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-sm md:text-base">
+            <Package size={18} className="md:w-5 md:h-5" /> <span className="whitespace-nowrap">Products</span>
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
-            <ShoppingBag size={20} /> Orders
+          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-sm md:text-base">
+            <ShoppingBag size={18} className="md:w-5 md:h-5" /> <span className="whitespace-nowrap">Orders</span>
             {orders.length > 0 && (
-              <span className="ml-auto bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">{orders.length}</span>
+              <span className="ml-1 md:ml-auto bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">{orders.length}</span>
             )}
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
-            <Users size={20} /> Customers
+          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-sm md:text-base">
+            <Users size={18} className="md:w-5 md:h-5" /> <span className="whitespace-nowrap">Customers</span>
+          </button>
+          
+          {/* Mobile Logout Button (shows inline with tabs) */}
+          <button onClick={handleLogout} className="md:hidden flex-shrink-0 flex items-center gap-2 px-3 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors text-sm">
+            <LogOut size={18} /> Logout
           </button>
         </nav>
         
-        <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+        <div className="p-4 border-t border-gray-100 dark:border-gray-800 hidden md:block">
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors">
             <LogOut size={20} /> Exit Portal
           </button>
