@@ -1,3 +1,15 @@
+export const CATEGORY_HIERARCHY = {
+  'Electronics Item': ['Mobiles', 'Laptops', 'TVs', 'Audio', 'Watches', 'Cameras'],
+  'Fashion Collection': ['Men Dress', 'Women Dress', 'Shoes', 'Accessories'],
+  'Home Appliance': ['ACs', 'Refrigerators', 'Washing Machines'],
+  'Kitchen Item': ['Microwaves', 'Blenders', 'Cookware'],
+  'Furniture': ['Sofas', 'Beds', 'Tables'],
+  'Food': ['Snacks', 'Beverages', 'Groceries'],
+  'Gadgets': ['Smart Home', 'Wearables', 'Drones'],
+  'Toys and Games': ['Action Figures', 'Board Games', 'Puzzles'],
+  'Health & beauty': ['Skincare', 'Makeup', 'Haircare']
+};
+
 export const CATEGORIES = [
   { id: 1, name: 'Mobiles' },
   { id: 2, name: 'Laptops' },
