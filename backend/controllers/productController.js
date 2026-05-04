@@ -1,5 +1,17 @@
 const Product = require('../models/Product');
 
+const CATEGORY_HIERARCHY = {
+  'Electronics Item': ['Mobiles', 'Laptops', 'TVs', 'Audio', 'Watches', 'Cameras'],
+  'Fashion Collection': ['Men Dress', 'Women Dress', 'Shoes', 'Accessories'],
+  'Home Appliance': ['ACs', 'Refrigerators', 'Washing Machines'],
+  'Kitchen Item': ['Microwaves', 'Blenders', 'Cookware'],
+  'Furniture': ['Sofas', 'Beds', 'Tables'],
+  'Food': ['Snacks', 'Beverages', 'Groceries'],
+  'Gadgets': ['Smart Home', 'Wearables', 'Drones'],
+  'Toys and Games': ['Action Figures', 'Board Games', 'Puzzles'],
+  'Health & beauty': ['Skincare', 'Makeup', 'Haircare']
+};
+
 // @desc    Fetch all products with optional search/category filter
 // @route   GET /api/products
 // @access  Public
@@ -8,19 +20,35 @@ const getProducts = async (req, res) => {
     const keyword = req.query.keyword ? {
       title: { $regex: req.query.keyword, $options: 'i' }
     } : {};
-    const category = req.query.category ? { category: req.query.category } : {};
-    const products = await Product.find({ ...keyword, ...category }).populate('vendor', 'name businessName');
+    
+    let categoryFilter = {};
+    if (req.query.category) {
+      if (CATEGORY_HIERARCHY[req.query.category]) {
+        // It's a main category, search for any of its subcategories
+        categoryFilter = { category: { $in: CATEGORY_HIERARCHY[req.query.category] } };
+      } else {
+        // It's a specific subcategory
+        categoryFilter = { category: req.query.category };
+      }
+    }
+
+    const products = await Product.find({ ...keyword, ...categoryFilter }).populate('vendor', 'name businessName');
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+const mongoose = require('mongoose');
+
 // @desc    Fetch single product
 // @route   GET /api/products/:id
 // @access  Public
 const getProductById = async (req, res) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
     const product = await Product.findById(req.params.id).populate('vendor', 'name businessName');
     if (product) {
       res.json(product);

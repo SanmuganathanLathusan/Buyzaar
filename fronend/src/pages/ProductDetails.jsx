@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ShoppingCart, Heart, Share2, CheckCircle, ShieldCheck, Truck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
+import { PRODUCTS } from '../data/products';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -26,7 +27,14 @@ const ProductDetails = () => {
         setProduct(data);
         setError(null);
       } catch (err) {
-        setError(err.message);
+        // Fallback to static data if API fails
+        const fallbackProduct = PRODUCTS.find(p => String(p.id) === String(id) || String(p._id) === String(id));
+        if (fallbackProduct) {
+          setProduct(fallbackProduct);
+          setError(null);
+        } else {
+          setError(err.message);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -169,14 +177,7 @@ const ProductDetails = () => {
               </button>
             </div>
             
-            <div className="flex items-center gap-6 mt-6 justify-center sm:justify-start">
-               <button className="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors">
-                 <Heart className="w-5 h-5" /> Add to Wishlist
-               </button>
-               <button className="flex items-center gap-1 text-gray-500 hover:text-blue-500 transition-colors">
-                 <Share2 className="w-5 h-5" /> Share
-               </button>
-            </div>
+
 
           </div>
         </div>

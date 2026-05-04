@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Filter, ChevronDown, Frown } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { PRODUCTS as STATIC_PRODUCTS, CATEGORIES } from '../data/products';
+import { PRODUCTS as STATIC_PRODUCTS, CATEGORIES, CATEGORY_HIERARCHY } from '../data/products';
 
 const ProductList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -10,6 +10,7 @@ const ProductList = () => {
   
   const searchQuery = searchParams.get('search') || '';
   const categoryQuery = searchParams.get('category') || '';
+  const subcategoryQuery = searchParams.get('subcategory') || '';
   
   const [products, setProducts] = useState(STATIC_PRODUCTS); // Fallback to static, but will fetch below
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +22,11 @@ const ProductList = () => {
         setIsLoading(true);
         let url = '/api/products?';
         if (searchQuery) url += `keyword=${encodeURIComponent(searchQuery)}&`;
-        if (categoryQuery) url += `category=${encodeURIComponent(categoryQuery)}&`;
+        if (subcategoryQuery) {
+          url += `category=${encodeURIComponent(subcategoryQuery)}&`;
+        } else if (categoryQuery) {
+          url += `category=${encodeURIComponent(categoryQuery)}&`;
+        }
         
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch products');
@@ -38,17 +43,26 @@ const ProductList = () => {
     };
 
     fetchProducts();
-  }, [searchQuery, categoryQuery]);
+  }, [searchQuery, categoryQuery, subcategoryQuery]);
 
-  const handleCategoryToggle = (categoryName) => {
+  const handleCategoryToggle = (subcategoryName) => {
     const newParams = new URLSearchParams(searchParams);
-    if (categoryQuery === categoryName) {
-      newParams.delete('category'); // Toggle off
+    if (subcategoryQuery === subcategoryName) {
+      newParams.delete('subcategory'); // Toggle off
     } else {
-      newParams.set('category', categoryName); // Toggle on
+      newParams.set('subcategory', subcategoryName); // Toggle on
     }
     setSearchParams(newParams);
   };
+
+  // Determine which subcategories to show
+  let currentSubcategories = CATEGORIES.map(c => c.name);
+  if (categoryQuery && CATEGORY_HIERARCHY[categoryQuery]) {
+    currentSubcategories = CATEGORY_HIERARCHY[categoryQuery];
+  } else if (categoryQuery) {
+    // If somehow a main category is not found in hierarchy, show nothing or default
+    currentSubcategories = CATEGORIES.map(c => c.name);
+  }
 
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
@@ -66,7 +80,7 @@ const ProductList = () => {
         
         {/* Breadcrumb */}
         <div className="text-sm text-gray-500 mb-4">
-          Home &gt; {categoryQuery ? <span className="text-gray-900 dark:text-white font-medium">{categoryQuery}</span> : 'All Products'} {searchQuery && `> Search: "${searchQuery}"`}
+          Home &gt; {categoryQuery ? <span className="text-gray-900 dark:text-white font-medium">{categoryQuery}</span> : 'All Products'} {subcategoryQuery && `> ${subcategoryQuery}`} {searchQuery && `> Search: "${searchQuery}"`}
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
@@ -80,17 +94,17 @@ const ProductList = () => {
 
             {/* Category Filter */}
             <div>
-              <h3 className="font-semibold mb-3 dark:text-gray-200">Category</h3>
+              <h3 className="font-semibold mb-3 dark:text-gray-200">{categoryQuery ? 'Subcategories' : 'Categories'}</h3>
               <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                {CATEGORIES.map(cat => (
-                  <li key={cat.id} className="flex items-center gap-2 cursor-pointer hover:text-primary">
+                {currentSubcategories.map((catName, idx) => (
+                  <li key={idx} className="flex items-center gap-2 cursor-pointer hover:text-primary">
                     <input 
                       type="checkbox" 
                       className="accent-primary" 
-                      checked={categoryQuery === cat.name}
-                      onChange={() => handleCategoryToggle(cat.name)}
+                      checked={subcategoryQuery === catName}
+                      onChange={() => handleCategoryToggle(catName)}
                     /> 
-                    <span onClick={() => handleCategoryToggle(cat.name)}>{cat.name}</span>
+                    <span onClick={() => handleCategoryToggle(catName)}>{catName}</span>
                   </li>
                 ))}
               </ul>
@@ -116,21 +130,7 @@ const ProductList = () => {
               </div>
             </div>
 
-            <hr className="dark:border-gray-700" />
 
-            {/* Rating Filter */}
-            <div>
-              <h3 className="font-semibold mb-3 dark:text-gray-200">Rating</h3>
-              {[4, 3, 2, 1].map(stars => (
-                <div key={stars} className="flex items-center gap-2 mb-2 cursor-pointer hover:text-primary text-sm text-gray-600 dark:text-gray-400">
-                  <input type="checkbox" className="accent-primary" />
-                  <div className="flex text-yellow-400">
-                    {'★'.repeat(stars)}{'☆'.repeat(5-stars)}
-                  </div>
-                  <span>& Up</span>
-                </div>
-              ))}
-            </div>
 
           </aside>
 
@@ -168,14 +168,7 @@ const ProductList = () => {
               </div>
             )}
 
-            {/* Pagination Placeholder */}
-            <div className="mt-8 flex justify-center gap-2 text-sm">
-              <button className="hidden sm:block px-4 py-2 border rounded-md hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">Previous</button>
-              <button className="px-4 py-2 bg-primary text-white rounded-md font-bold">1</button>
-              <button className="px-4 py-2 border rounded-md hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">2</button>
-              <button className="px-4 py-2 border rounded-md hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">3</button>
-              <button className="px-4 py-2 border rounded-md hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300">Next</button>
-            </div>
+
           </main>
         </div>
       </div>

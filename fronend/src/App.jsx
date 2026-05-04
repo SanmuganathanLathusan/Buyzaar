@@ -11,29 +11,18 @@ import ResetPassword from './pages/ResetPassword';
 import VendorDashboard from './pages/VendorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
+import Contact from './pages/Contact';
 import { Toaster } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-
-  const toggleTheme = () => setDarkMode(!darkMode);
-
   return (
     <AuthProvider>
       <CartProvider>
         <BrowserRouter>
         <div className="min-h-screen flex flex-col">
-          <Navbar darkMode={darkMode} toggleTheme={toggleTheme} />
+          <Navbar />
         <main className="flex-grow pt-4">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -41,6 +30,7 @@ function App() {
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Auth />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/vendor-dashboard" element={<VendorDashboard />} />
