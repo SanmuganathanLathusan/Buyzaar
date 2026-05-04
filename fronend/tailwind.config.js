@@ -9,9 +9,9 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#F85606', // Daraz Orange
-          hover: '#E04A00',
-          light: '#FFF0E6',
+          DEFAULT: '#0084D6', // Minago Blue
+          hover: '#006BBD',
+          light: '#E6F3FA',
         },
         secondary: '#333333',
         background: {
