@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
+import { apiFetch } from '../utils/api';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -25,7 +26,7 @@ const Auth = () => {
           businessName: userType === 'vendor' ? formData.name : undefined
         };
 
-        const response = await fetch('/api/auth/google', {
+        const response = await apiFetch('/api/auth/google', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -78,7 +79,7 @@ const Auth = () => {
             businessName: userType === 'vendor' ? formData.name : undefined
           };
 
-      const response = await fetch(endpoint, {
+      const response = await apiFetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -119,7 +120,7 @@ const Auth = () => {
     
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/forgot-password', {
+      const response = await apiFetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email })

@@ -5,6 +5,7 @@ import { ShoppingCart, Heart, Share2, CheckCircle, ShieldCheck, Truck } from 'lu
 import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
 import { PRODUCTS } from '../data/products';
+import { apiFetch } from '../utils/api';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -19,7 +20,7 @@ const ProductDetails = () => {
     const fetchProduct = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/products/${id}`);
+        const response = await apiFetch(`/api/products/${id}`);
         if (!response.ok) {
           throw new Error('Product not found');
         }

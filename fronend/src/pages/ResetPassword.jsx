@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { apiFetch } from '../utils/api';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -19,7 +20,7 @@ const ResetPassword = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/reset-password/${token}`, {
+      const response = await apiFetch(`/api/auth/reset-password/${token}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

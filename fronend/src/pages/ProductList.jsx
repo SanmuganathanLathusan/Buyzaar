@@ -3,6 +3,7 @@ import { Filter, ChevronDown, Frown } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { PRODUCTS as STATIC_PRODUCTS, CATEGORIES, CATEGORY_HIERARCHY } from '../data/products';
+import { apiFetch } from '../utils/api';
 
 const ProductList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,7 +29,7 @@ const ProductList = () => {
           url += `category=${encodeURIComponent(categoryQuery)}&`;
         }
         
-        const response = await fetch(url);
+        const response = await apiFetch(url);
         if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
         setProducts(data);
