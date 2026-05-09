@@ -1,7 +1,4 @@
-require('dotenv').config({ 
-  path: require('path').join(__dirname, '.env') 
-});
-
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -16,27 +13,17 @@ const adminRoutes = require('./routes/adminRoutes');
 const app = express();
 
 // Middleware
+// Allow the frontend dev server origin. In development accept any origin
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
-
-const corsOptions =
-  process.env.NODE_ENV === 'production'
-    ? {
-        origin: CLIENT_URL,
-        credentials: true,
-      }
-    : {
-        origin: true,
-        credentials: true,
-      };
+const corsOptions = process.env.NODE_ENV === 'production'
+  ? { origin: CLIENT_URL, credentials: true }
+  : { origin: true, credentials: true };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Routes
-app.get('/', (req, res) => {
-  res.json({ message: 'Buyzaar API is running...' });
-});
-
+// Mount Routes
+app.get('/', (req, res) => res.json({ message: 'Buyzaar API is running...' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
@@ -44,44 +31,28 @@ app.use('/api/admin', adminRoutes);
 
 // 404 Handler
 app.use((req, res) => {
-  res.status(404).json({
-    message: 'Route not found',
-  });
+  res.status(404).json({ message: 'Route not found' });
 });
 
-// MongoDB Connection
+const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
-let isConnected = false;
-
-const connectDB = async () => {
-  if (isConnected) return;
-
+const startServer = async () => {
   try {
+    if (!MONGO_URI) {
+      throw new Error('MONGO_URI is missing. Set it in backend/.env or Render environment variables.');
+    }
+
     await mongoose.connect(MONGO_URI);
-
-    isConnected = true;
-
     console.log('✅ MongoDB Connected Successfully');
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
   } catch (err) {
-    console.error('❌ MongoDB Connection Failed:', err.message);
+    console.error('❌ Server failed to start:', err.message);
+    process.exit(1);
   }
 };
 
-// Connect database for every serverless function call
-app.use(async (req, res, next) => {
-  await connectDB();
-  next();
-});
-
-// Export app for Vercel
-module.exports = app;
-
-// Run locally only
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5000;
-
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-  });
-}
+startServer();
