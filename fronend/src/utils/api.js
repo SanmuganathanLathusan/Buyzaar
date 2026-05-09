@@ -1,16 +1,11 @@
 // Helper utility for making API requests with JWT Auth headers
 
-// In production (Vercel), use VITE_API_URL. In local dev, use empty string (Vite proxy handles it).
-const API_BASE = import.meta.env.VITE_API_URL || '';
+// Use VITE_API_URL when provided. Otherwise fall back to the local backend in dev.
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export const fetchWithAuth = async (url, options = {}) => {
-  // Strip localhost prefix if present (legacy support), then prepend API_BASE
-  let endpoint = url.startsWith('http://localhost:5000')
-    ? url.replace('http://localhost:5000', '')
-    : url;
-
-  // Prepend the base URL for production
-  if (API_BASE && endpoint.startsWith('/')) {
+  let endpoint = url;
+  if (endpoint.startsWith('/')) {
     endpoint = `${API_BASE}${endpoint}`;
   }
 
@@ -35,13 +30,25 @@ export const fetchWithAuth = async (url, options = {}) => {
 
 // Helper for plain fetch calls (no auth) with base URL support
 export const apiFetch = async (url, options = {}) => {
-  let endpoint = url.startsWith('http://localhost:5000')
-    ? url.replace('http://localhost:5000', '')
-    : url;
+  let endpoint = url;
 
-  if (API_BASE && endpoint.startsWith('/')) {
+  if (endpoint.startsWith('/')) {
     endpoint = `${API_BASE}${endpoint}`;
   }
 
-  return fetch(endpoint, options);
+  // Attempt fetch and wrap network errors with clearer message
+  try {
+    // Log the outgoing request (helpful for diagnosing wrong URL/env)
+    // eslint-disable-next-line no-console
+    console.debug('[apiFetch] request:', endpoint, options && options.method ? options.method : 'GET');
+
+    const res = await fetch(endpoint, options);
+    return res;
+  } catch (err) {
+    // Repackage the error so UI can show a more helpful message
+    const message = `Network error when requesting ${endpoint}: ${err.message}`;
+    // eslint-disable-next-line no-console
+    console.error('[apiFetch] network error:', message, err);
+    throw new Error(message);
+  }
 };
