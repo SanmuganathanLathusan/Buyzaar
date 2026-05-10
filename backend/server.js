@@ -13,16 +13,21 @@ const orderRoutes = require('./routes/orderRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 // Middleware
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
-
 const allowedOrigins = [
-  CLIENT_URL,
+  process.env.CLIENT_URL,
   'http://localhost:5173',
   'http://localhost:3000',
-].filter(url => url); // Remove empty strings
+  'https://buyzaar-kp8n.vercel.app'
+];
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
   credentials: true
 }));
 
