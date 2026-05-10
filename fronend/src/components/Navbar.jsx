@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, ChevronDown, Heart } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, ChevronDown, Heart, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -51,12 +51,11 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/85">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center gap-4 py-4 lg:flex-nowrap">
-          <Link to="/" className="group flex items-center gap-3 rounded-2xl bg-slate-950 px-4 py-2 text-white shadow-lg shadow-slate-950/15 transition-transform duration-300 hover:-translate-y-0.5 dark:bg-white dark:text-slate-950">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 dark:bg-slate-950/10">
-              <ShoppingCart className="h-5 w-5" />
+          <Link to="/" className="group flex items-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-2 text-white shadow-lg shadow-blue-600/20 transition-transform duration-300 hover:-translate-y-0.5 dark:from-blue-700 dark:to-cyan-600">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 dark:bg-white/10">
+              <Zap className="h-5 w-5" />
             </span>
             <span className="flex flex-col leading-none">
-              <span className="text-xs uppercase tracking-[0.3em] text-white/65 dark:text-slate-500">Multi-vendor</span>
               <span className="text-2xl font-black tracking-tight">Buyzaar</span>
             </span>
           </Link>
