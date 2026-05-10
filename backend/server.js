@@ -14,9 +14,17 @@ const adminRoutes = require('./routes/adminRoutes');
 
 // Middleware
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL || '';
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  CLIENT_URL,
+  FRONTEND_URL
+].filter(url => url); // Remove empty strings
 
 app.use(cors({
-  origin: CLIENT_URL,
+  origin: allowedOrigins,
   credentials: true
 }));
 
