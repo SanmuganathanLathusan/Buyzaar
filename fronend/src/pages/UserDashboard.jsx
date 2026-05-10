@@ -123,10 +123,10 @@ const UserDashboard = () => {
 
   return (
     <div className="bg-background dark:bg-background-dark min-h-screen pb-12">
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-12">
         
         {/* Breadcrumb */}
-        <div className="text-sm text-gray-500 mb-6 flex items-center gap-2">
+        <div className="text-sm text-gray-500 mb-8 flex items-center gap-2">
           <Link to="/" className="hover:text-primary transition-colors">Home</Link> 
           <ChevronRight size={14} /> 
           <span className="text-gray-900 dark:text-white font-medium">My Account</span>
