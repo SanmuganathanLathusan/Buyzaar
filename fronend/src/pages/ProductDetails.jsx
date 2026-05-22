@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Heart, Share2, CheckCircle, ShieldCheck, Truck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { PRODUCTS } from '../data/products';
 import { apiFetch } from '../utils/api';
 
 const ProductDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,7 +48,24 @@ const ProductDetails = () => {
   }, [id]);
 
   const handleAddToCart = () => {
+    if (!user) {
+      toast.error('Please login first to add products to cart!');
+      navigate('/login');
+      return;
+    }
     if (product) addToCart(product, quantity);
+  };
+
+  const handleBuyNow = () => {
+    if (!user) {
+      toast.error('Please login first to buy products!');
+      navigate('/login');
+      return;
+    }
+    if (product) {
+      addToCart(product, quantity);
+      navigate('/checkout');
+    }
   };
 
   if (isLoading) {
@@ -169,9 +189,9 @@ const ProductDetails = () => {
 
             {/* Call to actions */}
             <div className="flex flex-col sm:flex-row gap-4 mt-auto pt-4">
-              <Link to="/checkout" className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md font-bold text-center transition-colors shadow-md shadow-blue-500/30">
+              <button onClick={handleBuyNow} className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-md font-bold text-center transition-colors shadow-md shadow-blue-500/30">
                 Buy Now
-              </Link>
+              </button>
               <button onClick={handleAddToCart} className="flex-1 bg-primary hover:bg-primary-hover text-white py-3 rounded-md font-bold text-center shadow-md shadow-primary/30 flex justify-center items-center gap-2 transition-colors">
                 <ShoppingCart className="w-5 h-5" />
                 Add to Cart
