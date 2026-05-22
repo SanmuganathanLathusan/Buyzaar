@@ -29,14 +29,28 @@ const VendorDashboard = () => {
     setLoading(true);
     try {
       const prodRes = await fetchWithAuth('http://localhost:5000/api/products/vendor/myproducts');
-      const prodData = await prodRes.json();
-      setProducts(prodData || []);
+      if (!prodRes.ok) {
+        const err = await prodRes.json();
+        console.error('Products fetch error:', err.message);
+        setProducts([]);
+      } else {
+        const prodData = await prodRes.json();
+        setProducts(Array.isArray(prodData) ? prodData : []);
+      }
 
       const orderRes = await fetchWithAuth('http://localhost:5000/api/orders/vendor');
-      const orderData = await orderRes.json();
-      setOrders(orderData || []);
+      if (!orderRes.ok) {
+        const err = await orderRes.json();
+        console.error('Orders fetch error:', err.message);
+        setOrders([]);
+      } else {
+        const orderData = await orderRes.json();
+        setOrders(Array.isArray(orderData) ? orderData : []);
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      setProducts([]);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -58,10 +72,10 @@ const VendorDashboard = () => {
   });
 
   const stats = [
-    { title: 'Total Revenue', value: `Rs. ${totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-500/10' },
-    { title: 'Total Orders', value: totalOrders.toString(), icon: ShoppingBag, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-500/10' },
-    { title: 'Total Products', value: totalProducts.toString(), icon: Package, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-500/10' },
-    { title: 'Store Visitors', value: uniqueCustomers.toString(), icon: Users, color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-500/10' },
+    { title: 'Total Revenue', value: `Rs. ${(totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-500/10' },
+    { title: 'Total Orders', value: String(totalOrders ?? 0), icon: ShoppingBag, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-500/10' },
+    { title: 'Total Products', value: String(totalProducts ?? 0), icon: Package, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-500/10' },
+    { title: 'Store Visitors', value: String(uniqueCustomers ?? 0), icon: Users, color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-500/10' },
   ];
 
   const getStatusColor = (status) => {
