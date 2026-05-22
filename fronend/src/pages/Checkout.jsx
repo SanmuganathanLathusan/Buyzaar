@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, Banknote, Truck } from 'lucide-react';
@@ -10,6 +10,13 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { cartSubtotal, clearCart, cartItems } = useCart();
   const { token } = useAuth();
+
+  useEffect(() => {
+    if (!token) {
+      toast.error('Please login first to access checkout!');
+      navigate('/login');
+    }
+  }, [token, navigate]);
   
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [isSubmitting, setIsSubmitting] = useState(false);
