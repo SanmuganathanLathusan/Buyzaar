@@ -4,6 +4,10 @@ import { Package, ShoppingBag, DollarSign, Users, Settings, LogOut, TrendingUp, 
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { fetchWithAuth } from '../utils/api';
+import toast from 'react-hot-toast';
+
+const inputCls =
+  'w-full px-4 py-3 rounded-xl border border-border dark:border-border-dark bg-surface-muted dark:bg-slate-800 text-sm text-secondary dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary/25 focus:border-primary focus:bg-white dark:focus:bg-slate-700 transition-all duration-200 outline-none';
 
 const VendorDashboard = () => {
   const { user, token, logout } = useAuth();
@@ -12,14 +16,14 @@ const VendorDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const [newProduct, setNewProduct] = useState({
     title: '', description: '', price: '', originalPrice: '', discount: '', category: 'Mobiles', image: '', stock: ''
   });
 
   useEffect(() => {
     if (!token) {
-      navigate('/auth');
+      navigate('/login');
       return;
     }
     fetchDashboardData();
@@ -58,33 +62,38 @@ const VendorDashboard = () => {
 
   const totalProducts = products.length;
   const totalOrders = orders.length;
-  const uniqueCustomers = new Set(orders.map(o => o.customer?._id)).size;
+  const uniqueCustomers = new Set(orders.map((o) => o.customer?._id)).size;
 
   let totalRevenue = 0;
-  orders.forEach(order => {
+  orders.forEach((order) => {
     if (order.status !== 'Cancelled') {
-      order.orderItems.forEach(item => {
+      order.orderItems.forEach((item) => {
         if (item.product && item.product.vendor && item.product.vendor.toString() === user?._id?.toString()) {
-           totalRevenue += item.price * item.qty;
+          totalRevenue += item.price * item.qty;
         }
       });
     }
   });
 
   const stats = [
-    { title: 'Total Revenue', value: `Rs. ${(totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-500/10' },
-    { title: 'Total Orders', value: String(totalOrders ?? 0), icon: ShoppingBag, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-500/10' },
-    { title: 'Total Products', value: String(totalProducts ?? 0), icon: Package, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-500/10' },
-    { title: 'Store Visitors', value: String(uniqueCustomers ?? 0), icon: Users, color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-500/10' },
+    { title: 'Total Revenue', value: `Rs. ${(totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900/20' },
+    { title: 'Total Orders', value: String(totalOrders ?? 0), icon: ShoppingBag, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-900/20' },
+    { title: 'Total Products', value: String(totalProducts ?? 0), icon: Package, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-950/30 border-purple-100 dark:border-purple-900/20' },
+    { title: 'Store Visitors', value: String(uniqueCustomers ?? 0), icon: Users, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900/20' },
   ];
 
   const getStatusColor = (status) => {
-    switch(status) {
-      case 'Delivered': return 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400';
-      case 'Shipped': return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400';
-      case 'Pending': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400';
-      case 'Cancelled': return 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400';
-      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
+    switch (status) {
+      case 'Delivered':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/30';
+      case 'Shipped':
+        return 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/30';
+      case 'Pending':
+        return 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30';
+      case 'Cancelled':
+        return 'bg-red-50 text-red-700 border-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/30';
+      default:
+        return 'bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700';
     }
   };
 
@@ -92,29 +101,30 @@ const VendorDashboard = () => {
     e.preventDefault();
     try {
       const payload = {
-         ...newProduct,
-         price: Number(newProduct.price),
-         originalPrice: Number(newProduct.originalPrice) || 0,
-         discount: Number(newProduct.discount) || 0,
-         stock: Number(newProduct.stock)
+        ...newProduct,
+        price: Number(newProduct.price),
+        originalPrice: Number(newProduct.originalPrice) || 0,
+        discount: Number(newProduct.discount) || 0,
+        stock: Number(newProduct.stock),
       };
 
       const res = await fetchWithAuth('http://localhost:5000/api/products', {
         method: 'POST',
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
-      
+
       if (res.ok) {
         setIsModalOpen(false);
         setNewProduct({ title: '', description: '', price: '', originalPrice: '', discount: '', category: 'Mobiles', image: '', stock: '' });
+        toast.success('Product created successfully!');
         fetchDashboardData();
       } else {
         const errData = await res.json();
-        alert(`Error: ${errData.message}`);
+        toast.error(`Error: ${errData.message}`);
       }
     } catch (error) {
-       console.error('Failed to create product:', error);
-       alert('Failed to connect to server');
+      console.error('Failed to create product:', error);
+      toast.error('Failed to connect to server');
     }
   };
 
@@ -124,40 +134,44 @@ const VendorDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-background-dark flex flex-col md:flex-row pb-12 md:pb-0">
-      {/* Sidebar / Top Nav on Mobile */}
-      <aside className="w-full md:w-64 bg-white dark:bg-cardDark border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 md:h-screen md:sticky md:top-16 lg:top-20 flex flex-col pt-2 md:pt-0">
+    <div className="min-h-screen bg-background dark:bg-background-dark flex flex-col md:flex-row pb-12 md:pb-0">
+      {/* Sidebar Navigation */}
+      <aside className="w-full md:w-64 bg-white dark:bg-surface-dark border-b md:border-b-0 md:border-r border-border dark:border-border-dark md:h-screen md:sticky md:top-16 flex flex-col pt-2 md:pt-0">
         <div className="p-4 md:p-6 hidden md:block">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Vendor Portal</h2>
-          <p className="text-xs text-gray-500 mt-1">{user?.businessName || user?.name || 'Vendor Store'}</p>
+          <h2 className="text-lg font-black text-secondary dark:text-white uppercase tracking-tight">Vendor Portal</h2>
+          <p className="text-xs text-slate-400 mt-0.5">{user?.businessName || user?.name || 'Vendor Store'}</p>
         </div>
-        
-        <nav className="flex-none flex overflow-x-auto md:flex-1 md:flex-col px-2 md:px-4 py-2 md:py-0 md:space-y-2 gap-2 scrollbar-none">
-          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 bg-primary/10 text-primary rounded-md font-medium text-sm md:text-base">
-            <TrendingUp size={18} className="md:w-5 md:h-5" /> <span className="whitespace-nowrap">Dashboard</span>
+
+        <nav className="flex-none flex overflow-x-auto md:flex-1 md:flex-col px-2 md:px-4 py-2 md:py-0 md:space-y-1.5 gap-1.5 scrollbar-none">
+          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 bg-primary/8 text-primary rounded-xl font-bold text-sm md:text-base text-left">
+            <TrendingUp size={18} className="md:w-5 md:h-5" /> <span>Dashboard</span>
           </button>
-          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-sm md:text-base">
-            <Package size={18} className="md:w-5 md:h-5" /> <span className="whitespace-nowrap">Products</span>
+          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800 rounded-xl font-semibold text-sm md:text-base text-left transition-colors">
+            <Package size={18} className="md:w-5 md:h-5" /> <span>Products</span>
           </button>
-          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-sm md:text-base">
-            <ShoppingBag size={18} className="md:w-5 md:h-5" /> <span className="whitespace-nowrap">Orders</span>
+          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800 rounded-xl font-semibold text-sm md:text-base text-left transition-colors flex justify-between items-center w-full">
+            <span className="flex items-center gap-2 md:gap-3"><ShoppingBag size={18} className="md:w-5 md:h-5" /> <span>Orders</span></span>
             {orders.length > 0 && (
-              <span className="ml-1 md:ml-auto bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">{orders.length}</span>
+              <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold px-2 py-0.5 rounded-full border border-border dark:border-border-dark">
+                {orders.length}
+              </span>
             )}
           </button>
-          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-sm md:text-base">
-            <Users size={18} className="md:w-5 md:h-5" /> <span className="whitespace-nowrap">Customers</span>
+          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800 rounded-xl font-semibold text-sm md:text-base text-left transition-colors">
+            <Users size={18} className="md:w-5 md:h-5" /> <span>Customers</span>
           </button>
-          
-          {/* Mobile Logout Button (shows inline with tabs) */}
-          <button onClick={handleLogout} className="md:hidden flex-shrink-0 flex items-center gap-2 px-3 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors text-sm">
+
+          <button onClick={handleLogout} className="md:hidden flex-shrink-0 flex items-center gap-2 px-3 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors text-sm">
             <LogOut size={18} /> Logout
           </button>
         </nav>
-        
-        <div className="p-4 border-t border-gray-100 dark:border-gray-800 hidden md:block">
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors">
-            <LogOut size={20} /> Exit Portal
+
+        <div className="p-4 border-t border-border dark:border-border-dark hidden md:block mt-auto">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-2.5 justify-center text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl border border-red-100 dark:border-red-900/30 transition-all text-sm font-bold"
+          >
+            <LogOut size={18} /> Exit Portal
           </button>
         </div>
       </aside>
@@ -166,40 +180,44 @@ const VendorDashboard = () => {
       <main className="flex-1 p-4 md:p-8">
         <header className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h1>
-            <p className="text-sm text-gray-500">Welcome back, {user?.name || 'Vendor'}</p>
+            <h1 className="text-2xl font-black text-secondary dark:text-white tracking-tight">Dashboard Overview</h1>
+            <p className="text-sm text-slate-500">Welcome back, {user?.name || 'Vendor'}</p>
           </div>
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+            className="btn-primary btn-md rounded-xl gap-2 font-bold"
           >
             <Plus size={16} /> Add Product
           </button>
         </header>
 
         {loading ? (
-           <div className="flex justify-center items-center h-64">
-           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-         </div>
+          <div className="min-h-[40vh] flex flex-col items-center justify-center gap-4">
+            <div className="relative">
+              <div className="w-10 h-10 border-4 border-primary/20 rounded-full" />
+              <div className="absolute inset-0 w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+            <p className="text-xs text-slate-400 font-medium">Loading store details…</p>
+          </div>
         ) : (
           <>
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {stats.map((stat, i) => (
-                <motion.div 
-                  key={i} 
-                  initial={{ opacity: 0, y: 20 }}
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="bg-white dark:bg-cardDark p-6 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm"
+                  transition={{ delay: i * 0.06 }}
+                  className="bg-white dark:bg-surface-dark p-5 rounded-2xl border border-border dark:border-border-dark shadow-card"
                 >
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-sm font-medium text-gray-500 mb-1">{stat.title}</p>
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</h3>
+                      <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{stat.title}</p>
+                      <h3 className="text-xl font-black text-secondary dark:text-white tracking-tight">{stat.value}</h3>
                     </div>
-                    <div className={`p-3 rounded-full ${stat.bg}`}>
-                      <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center border ${stat.bg}`}>
+                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
                     </div>
                   </div>
                 </motion.div>
@@ -209,40 +227,52 @@ const VendorDashboard = () => {
             {/* Content Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Recent Orders Table */}
-              <div className="lg:col-span-2 bg-white dark:bg-cardDark rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Orders</h3>
-                  <button className="text-primary text-sm font-medium hover:underline">View All</button>
+              <div className="lg:col-span-2 bg-white dark:bg-surface-dark rounded-3xl border border-border dark:border-border-dark shadow-card overflow-hidden">
+                <div className="p-6 border-b border-border dark:border-border-dark flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-secondary dark:text-white">Recent Orders</h3>
+                  <button className="text-primary text-sm font-semibold hover:text-primary-hover transition-colors">
+                    View All
+                  </button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
-                        <th className="px-6 py-4 font-medium">Order ID</th>
-                        <th className="px-6 py-4 font-medium">Customer</th>
-                        <th className="px-6 py-4 font-medium">Date</th>
-                        <th className="px-6 py-4 font-medium">Total</th>
-                        <th className="px-6 py-4 font-medium">Status</th>
+                      <tr className="bg-surface-muted dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest border-b border-border dark:border-border-dark">
+                        <th className="px-6 py-4">Order ID</th>
+                        <th className="px-6 py-4">Customer</th>
+                        <th className="px-6 py-4">Date</th>
+                        <th className="px-6 py-4">Total</th>
+                        <th className="px-6 py-4">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    <tbody className="divide-y divide-border dark:divide-border-dark">
                       {orders.length === 0 ? (
                         <tr>
-                          <td colSpan="5" className="px-6 py-8 text-center text-sm text-gray-500">No recent orders.</td>
+                          <td colSpan="5" className="px-6 py-8 text-center text-sm text-slate-400">
+                            No recent orders.
+                          </td>
                         </tr>
                       ) : (
                         orders.slice(0, 5).map((order, i) => (
-                          <tr key={order._id || i} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
-                            <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">#{order._id?.substring(order._id.length - 6).toUpperCase()}</td>
-                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{order.customer?.name || 'Guest'}</td>
-                            <td className="px-6 py-4 text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</td>
-                            <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                              Rs. {order.orderItems
-                                .filter(item => item.product?.vendor === user?._id)
-                                .reduce((sum, item) => sum + (item.price * item.qty), 0).toLocaleString()}
+                          <tr key={order._id || i} className="hover:bg-surface-muted/50 dark:hover:bg-slate-900/30 transition-colors">
+                            <td className="px-6 py-4 text-sm font-bold text-primary">
+                              #{order._id?.substring(order._id.length - 6).toUpperCase()}
+                            </td>
+                            <td className="px-6 py-4 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                              {order.customer?.name || 'Guest'}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-slate-500">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 text-sm font-bold text-secondary dark:text-white">
+                              Rs.{' '}
+                              {order.orderItems
+                                .filter((item) => item.product?.vendor === user?._id)
+                                .reduce((sum, item) => sum + item.price * item.qty, 0)
+                                .toLocaleString()}
                             </td>
                             <td className="px-6 py-4">
-                              <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                              <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(order.status)}`}>
                                 {order.status}
                               </span>
                             </td>
@@ -256,29 +286,37 @@ const VendorDashboard = () => {
 
               {/* Quick Actions / Alerts */}
               <div className="space-y-6">
-                <div className="bg-white dark:bg-cardDark rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm p-6">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Stock Alerts</h3>
+                <div className="bg-white dark:bg-surface-dark rounded-3xl border border-border dark:border-border-dark shadow-card p-6">
+                  <h3 className="text-lg font-bold text-secondary dark:text-white mb-4">Stock Alerts</h3>
                   <div className="space-y-4">
-                    {products.filter(p => p.stock < 5).length === 0 ? (
-                      <p className="text-sm text-gray-500">All products have sufficient stock.</p>
+                    {products.filter((p) => p.stock < 5).length === 0 ? (
+                      <p className="text-sm text-slate-400 italic">All products have sufficient stock.</p>
                     ) : (
-                      products.filter(p => p.stock < 5).map((prod) => (
-                        <div key={prod._id} className="flex items-start gap-3">
-                          <AlertCircle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${prod.stock === 0 ? 'text-red-500' : 'text-yellow-500'}`} />
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-white">{prod.stock === 0 ? 'Out of Stock' : 'Low Stock'}: {prod.title}</h4>
-                            <p className="text-xs text-gray-500 mt-1">Only {prod.stock} items left in inventory.</p>
+                      products
+                        .filter((p) => p.stock < 5)
+                        .map((prod) => (
+                          <div key={prod._id} className="flex items-start gap-3">
+                            <div className={`p-2 rounded-lg flex-shrink-0 ${prod.stock === 0 ? 'bg-red-50 dark:bg-red-950/30 text-red-500' : 'bg-amber-50 dark:bg-amber-950/30 text-amber-500'}`}>
+                              <AlertCircle className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-secondary dark:text-white leading-snug">
+                                {prod.stock === 0 ? 'Out of Stock' : 'Low Stock'}: {prod.title}
+                              </h4>
+                              <p className="text-xs text-slate-400 mt-1">Only {prod.stock} items left in inventory.</p>
+                            </div>
                           </div>
-                        </div>
-                      ))
+                        ))
                     )}
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-primary/10 to-orange-100 dark:from-primary/20 dark:to-orange-900/20 rounded-lg p-6 border border-primary/20">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Boost Your Sales</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Join our upcoming Mega Sale campaign to increase visibility!</p>
-                  <button className="w-full bg-primary hover:bg-primary-hover text-white py-2 rounded-md text-sm font-medium transition-colors">
+                <div className="bg-gradient-to-br from-primary/10 to-orange-100 dark:from-primary/20 dark:to-orange-900/20 rounded-3xl p-6 border border-primary/20 text-center">
+                  <h3 className="text-lg font-bold text-secondary dark:text-white mb-2">Boost Your Sales</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-5 leading-relaxed">
+                    Join our upcoming Mega Sale campaign to increase visibility and traffic!
+                  </p>
+                  <button className="btn-primary btn-md w-full rounded-xl justify-center font-bold">
                     Join Campaign
                   </button>
                 </div>
@@ -291,132 +329,156 @@ const VendorDashboard = () => {
       {/* Add Product Modal */}
       <AnimatePresence>
         {isModalOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-cardDark rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-surface-dark rounded-3xl border border-border dark:border-border-dark shadow-card-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
-              <div className="sticky top-0 bg-white dark:bg-cardDark p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center z-10">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Add New Product</h2>
-                <button 
+              <div className="sticky top-0 bg-white dark:bg-surface-dark p-6 border-b border-border dark:border-border-dark flex justify-between items-center z-10">
+                <h2 className="text-xl font-black text-secondary dark:text-white">Add New Product</h2>
+                <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                  className="p-2 text-slate-400 hover:text-primary rounded-full transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              <form onSubmit={handleCreateProduct} className="p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4 md:col-span-2">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Title *</label>
-                      <input 
-                        type="text" 
-                        required
-                        value={newProduct.title}
-                        onChange={(e) => setNewProduct({...newProduct, title: e.target.value})}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                        placeholder="e.g. Samsung Galaxy S23 Ultra"
-                      />
-                    </div>
+              <form onSubmit={handleCreateProduct} className="p-6 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Product Title *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newProduct.title}
+                      onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })}
+                      className={inputCls}
+                      placeholder="e.g. Samsung Galaxy S23 Ultra"
+                    />
                   </div>
 
-                  <div className="space-y-4 md:col-span-2">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                      <textarea 
-                        rows="3"
-                        value={newProduct.description}
-                        onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
-                        placeholder="Enter product description..."
-                      ></textarea>
-                    </div>
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Description
+                    </label>
+                    <textarea
+                      rows="3"
+                      value={newProduct.description}
+                      onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                      className={`${inputCls} resize-none`}
+                      placeholder="Enter product description..."
+                    />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Selling Price (Rs.) *</label>
-                    <input 
-                      type="number" 
-                      required min="0"
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Selling Price (Rs.) *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
                       value={newProduct.price}
-                      onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                      onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                      className={inputCls}
                       placeholder="99999"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Original Price (Rs.)</label>
-                    <input 
-                      type="number" min="0"
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Original Price (Rs.)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
                       value={newProduct.originalPrice}
-                      onChange={(e) => setNewProduct({...newProduct, originalPrice: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                      onChange={(e) => setNewProduct({ ...newProduct, originalPrice: e.target.value })}
+                      className={inputCls}
                       placeholder="120000"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category *</label>
-                    <select 
-                      required
-                      value={newProduct.category}
-                      onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                    >
-                      <option value="Mobiles">Mobiles</option>
-                      <option value="Laptops">Laptops</option>
-                      <option value="TVs">TVs</option>
-                      <option value="Audio">Audio</option>
-                      <option value="Watches">Watches</option>
-                      <option value="Cameras">Cameras</option>
-                    </select>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Category *
+                    </label>
+                    <div className="relative">
+                      <select
+                        required
+                        value={newProduct.category}
+                        onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                        className="appearance-none w-full px-4 py-3 rounded-xl border border-border dark:border-border-dark bg-surface-muted dark:bg-slate-800 text-sm text-secondary dark:text-white focus:ring-2 focus:ring-primary/25 focus:border-primary focus:bg-white dark:focus:bg-slate-700 transition-all duration-200 outline-none cursor-pointer"
+                      >
+                        <option value="Fashion Collection">Fashion Collection</option>
+                        <option value="Electronics Item">Electronics Item</option>
+                        <option value="Home Appliance">Home Appliance</option>
+                        <option value="Kitchen Item">Kitchen Item</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Food">Food</option>
+                        <option value="Gadgets">Gadgets</option>
+                        <option value="Toys and Games">Toys and Games</option>
+                        <option value="Health & beauty">Health & beauty</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stock Quantity *</label>
-                    <input 
-                      type="number" 
-                      required min="0"
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Stock Quantity *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
                       value={newProduct.stock}
-                      onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                      onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
+                      className={inputCls}
                       placeholder="50"
                     />
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image URL *</label>
-                    <input 
-                      type="url" 
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Image URL *
+                    </label>
+                    <input
+                      type="url"
                       required
                       value={newProduct.image}
-                      onChange={(e) => setNewProduct({...newProduct, image: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                      onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+                      className={inputCls}
                       placeholder="https://example.com/image.jpg"
                     />
                   </div>
                 </div>
 
-                <div className="pt-4 flex gap-4 justify-end border-t border-gray-100 dark:border-gray-800">
-                  <button 
+                <div className="pt-6 flex gap-3 justify-end border-t border-border dark:border-border-dark">
+                  <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    className="btn-secondary btn-md rounded-2xl"
                   >
                     Cancel
                   </button>
-                  <button 
+                  <button
                     type="submit"
-                    className="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded-md text-sm font-medium transition-colors"
+                    className="btn-primary btn-md rounded-2xl px-6"
                   >
                     Create Product
                   </button>
