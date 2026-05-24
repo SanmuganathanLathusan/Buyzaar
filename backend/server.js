@@ -5,45 +5,13 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 // ────────────────────────────────────────────────────────────────────────────
-// Validate Required Environment Variables
+// App Setup
 // ────────────────────────────────────────────────────────────────────────────
-const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-
-if (missingEnvVars.length > 0) {
-  console.error('❌ Missing required environment variables:', missingEnvVars);
-  console.error('Please set these in your Vercel environment variables');
-  // Don't exit - let Vercel show error
-}
-
 const app = express();
 
-// Import Routes
-const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/productRoutes');
-const orderRoutes = require('./routes/orderRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-
-// ────────────────────────────────────────────────────────────────────────────
-// CORS Configuration - Allow all Vercel deployments and local dev
-// ────────────────────────────────────────────────────────────────────────────
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:5000',
-  'https://buyzaar-roan.vercel.app',
-  process.env.CLIENT_URL
-];
-
+// CORS Configuration
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`CORS blocked request from: ${origin}`);
-      callback(null, true); // Allow anyway for Vercel preview deployments
-    }
-  },
+  origin: '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -53,44 +21,62 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ────────────────────────────────────────────────────────────────────────────
-// MongoDB Connection (with retry logic)
+// MongoDB Connection (Singleton Pattern for Serverless)
 // ────────────────────────────────────────────────────────────────────────────
-let isMongoConnected = false;
+let cachedConnection = null;
 
 const connectDB = async () => {
-  if (isMongoConnected) return;
-  
+  if (cachedConnection) {
+    console.log('Using cached MongoDB connection');
+    return cachedConnection;
+  }
+
+  if (!process.env.MONGO_URI) {
+    throw new Error('MONGO_URI environment variable is not set');
+  }
+
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
       connectTimeoutMS: 5000,
-      retryWrites: true
+      retryWrites: true,
+      w: 'majority'
     });
-    isMongoConnected = true;
+
+    cachedConnection = conn;
     console.log('✅ MongoDB Connected');
+    return conn;
   } catch (error) {
-    console.error('❌ MongoDB Connection Failed:', error.message);
-    isMongoConnected = false;
+    console.error('❌ MongoDB Connection Error:', error.message);
     throw error;
   }
 };
 
 // Middleware to ensure DB connection
 app.use(async (req, res, next) => {
-  if (!isMongoConnected) {
-    try {
-      await connectDB();
-    } catch (err) {
-      console.error('DB connection attempt failed:', err.message);
-      return res.status(503).json({ message: 'Database connection failed. Please try again.' });
-    }
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('DB connection failed:', error.message);
+    res.status(503).json({ 
+      message: 'Database unavailable',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
-  next();
 });
 
 // ────────────────────────────────────────────────────────────────────────────
-// Health Check & Routes
+// Import Routes
+// ────────────────────────────────────────────────────────────────────────────
+const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+
+// ────────────────────────────────────────────────────────────────────────────
+// Health Check
 // ────────────────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({ 
@@ -100,12 +86,17 @@ app.get('/', (req, res) => {
   });
 });
 
+// ────────────────────────────────────────────────────────────────────────────
+// API Routes
+// ────────────────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 
-// 404 handler
+// ────────────────────────────────────────────────────────────────────────────
+// 404 Handler
+// ────────────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ 
     message: 'Route not found',
@@ -114,7 +105,9 @@ app.use((req, res) => {
   });
 });
 
-// Error handler
+// ────────────────────────────────────────────────────────────────────────────
+// Error Handler
+// ────────────────────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({ 
@@ -124,7 +117,7 @@ app.use((err, req, res, next) => {
 });
 
 // ────────────────────────────────────────────────────────────────────────────
-// Start Server (Dev) OR Export for Vercel (Production)
+// Start Server (Dev) OR Export for Vercel (Serverless)
 // ────────────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 
@@ -140,6 +133,6 @@ if (process.env.NODE_ENV !== 'production') {
     process.exit(1);
   });
 } else {
-  // Vercel serverless
+  // Vercel serverless export
   module.exports = app;
 }
