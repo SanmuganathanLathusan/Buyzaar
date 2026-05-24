@@ -1,17 +1,5 @@
 const Product = require('../models/Product');
 
-const CATEGORY_HIERARCHY = {
-  'Electronics Item': ['Mobiles', 'Laptops', 'TVs', 'Audio', 'Watches', 'Cameras'],
-  'Fashion Collection': ['Men Dress', 'Women Dress', 'Shoes', 'Accessories'],
-  'Home Appliance': ['ACs', 'Refrigerators', 'Washing Machines'],
-  'Kitchen Item': ['Microwaves', 'Blenders', 'Cookware'],
-  'Furniture': ['Sofas', 'Beds', 'Tables'],
-  'Food': ['Snacks', 'Beverages', 'Groceries'],
-  'Gadgets': ['Smart Home', 'Wearables', 'Drones'],
-  'Toys and Games': ['Action Figures', 'Board Games', 'Puzzles'],
-  'Health & beauty': ['Skincare', 'Makeup', 'Haircare']
-};
-
 // @desc    Fetch all products with optional search/category filter
 // @route   GET /api/products
 // @access  Public
@@ -23,13 +11,8 @@ const getProducts = async (req, res) => {
     
     let categoryFilter = {};
     if (req.query.category) {
-      if (CATEGORY_HIERARCHY[req.query.category]) {
-        // It's a main category, search for any of its subcategories
-        categoryFilter = { category: { $in: CATEGORY_HIERARCHY[req.query.category] } };
-      } else {
-        // It's a specific subcategory
-        categoryFilter = { category: req.query.category };
-      }
+      // Case-insensitive category matching
+      categoryFilter = { category: { $regex: `^${req.query.category}$`, $options: 'i' } };
     }
 
     const products = await Product.find({ ...keyword, ...categoryFilter }).populate('vendor', 'name businessName');

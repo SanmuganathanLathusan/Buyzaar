@@ -1,22 +1,25 @@
 export const CATEGORY_HIERARCHY = {
-  'Electronics Item': ['Mobiles', 'Laptops', 'TVs', 'Audio', 'Watches', 'Cameras'],
-  'Fashion Collection': ['Men Dress', 'Women Dress', 'Shoes', 'Accessories'],
-  'Home Appliance': ['ACs', 'Refrigerators', 'Washing Machines'],
-  'Kitchen Item': ['Microwaves', 'Blenders', 'Cookware'],
-  'Furniture': ['Sofas', 'Beds', 'Tables'],
-  'Food': ['Snacks', 'Beverages', 'Groceries'],
-  'Gadgets': ['Smart Home', 'Wearables', 'Drones'],
-  'Toys and Games': ['Action Figures', 'Board Games', 'Puzzles'],
-  'Health & beauty': ['Skincare', 'Makeup', 'Haircare']
+  'Fashion Collection': ['Fashion Collection'],
+  'Electronics Item': ['Electronics Item'],
+  'Home Appliance': ['Home Appliance'],
+  'Kitchen Item': ['Kitchen Item'],
+  'Furniture': ['Furniture'],
+  'Food': ['Food'],
+  'Gadgets': ['Gadgets'],
+  'Toys and Games': ['Toys and Games'],
+  'Health & beauty': ['Health & beauty']
 };
 
 export const CATEGORIES = [
-  { id: 1, name: 'Mobiles' },
-  { id: 2, name: 'Laptops' },
-  { id: 3, name: 'TVs' },
-  { id: 4, name: 'Audio' },
-  { id: 5, name: 'Watches' },
-  { id: 6, name: 'Cameras' },
+  { id: 1, name: 'Fashion Collection' },
+  { id: 2, name: 'Electronics Item' },
+  { id: 3, name: 'Home Appliance' },
+  { id: 4, name: 'Kitchen Item' },
+  { id: 5, name: 'Furniture' },
+  { id: 6, name: 'Food' },
+  { id: 7, name: 'Gadgets' },
+  { id: 8, name: 'Toys and Games' },
+  { id: 9, name: 'Health & beauty' }
 ];
 
 export const PRODUCTS = [
