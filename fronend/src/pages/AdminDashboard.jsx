@@ -449,7 +449,7 @@ const AdminDashboard = () => {
                       orders.map((order) => (
                         <tr key={order._id} className="hover:bg-surface-muted/50 dark:hover:bg-slate-900/30 transition-colors">
                           <td className="px-6 py-4 text-sm font-bold text-secondary dark:text-white">{order._id?.slice(-8)}</td>
-                          <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{order.user?.name}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{order.customer?.name}</td>
                           <td className="px-6 py-4 text-sm font-bold text-secondary dark:text-white">Rs. {order.totalPrice}</td>
                           <td className="px-6 py-4">
                             <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(order.status)}`}>

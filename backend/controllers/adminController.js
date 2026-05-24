@@ -84,7 +84,7 @@ const getAllCustomers = async (req, res) => {
 const getAdminOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
-      .populate('user', 'name email')
+      .populate('customer', 'name email')
       .sort({ createdAt: -1 });
 
     res.json(orders);
