@@ -118,7 +118,7 @@ const Checkout = () => {
         totalPrice:   total
       };
 
-      const response = await fetchWithAuth('http://localhost:5000/api/orders', {
+      const response = await fetchWithAuth('/api/orders', {
         method: 'POST',
         body: JSON.stringify(orderPayload)
       });

@@ -29,7 +29,7 @@ const AdminDashboard = () => {
 
   const fetchAdminData = async () => {
     try {
-      const res = await fetchWithAuth('http://localhost:5000/api/admin/dashboard');
+      const res = await fetchWithAuth('/api/admin/dashboard');
       if (res.ok) {
         const data = await res.json();
         setDashboardData(data);

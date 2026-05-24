@@ -38,7 +38,7 @@ const UserDashboard = () => {
     setLoading(true);
     try {
       // Fetch fresh profile with extended fields
-      const profileRes = await fetchWithAuth('http://localhost:5000/api/auth/profile');
+      const profileRes = await fetchWithAuth('/api/auth/profile');
       if (profileRes.ok) {
         const profileData = await profileRes.json();
         setProfile(profileData);
@@ -51,7 +51,7 @@ const UserDashboard = () => {
       }
 
       // Fetch User Orders
-      const ordersRes = await fetchWithAuth('http://localhost:5000/api/orders/myorders');
+      const ordersRes = await fetchWithAuth('/api/orders/myorders');
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json();
         setOrders(ordersData);
@@ -76,7 +76,7 @@ const UserDashboard = () => {
         }
       };
 
-      const res = await fetchWithAuth('http://localhost:5000/api/auth/profile', {
+      const res = await fetchWithAuth('/api/auth/profile', {
         method: 'PUT',
         body: JSON.stringify(payload)
       });

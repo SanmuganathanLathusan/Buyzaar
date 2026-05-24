@@ -32,7 +32,7 @@ const VendorDashboard = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const prodRes = await fetchWithAuth('http://localhost:5000/api/products/vendor/myproducts');
+      const prodRes = await fetchWithAuth('/api/products/vendor/myproducts');
       if (!prodRes.ok) {
         const err = await prodRes.json();
         console.error('Products fetch error:', err.message);
@@ -42,7 +42,7 @@ const VendorDashboard = () => {
         setProducts(Array.isArray(prodData) ? prodData : []);
       }
 
-      const orderRes = await fetchWithAuth('http://localhost:5000/api/orders/vendor');
+      const orderRes = await fetchWithAuth('/api/orders/vendor');
       if (!orderRes.ok) {
         const err = await orderRes.json();
         console.error('Orders fetch error:', err.message);
@@ -108,7 +108,7 @@ const VendorDashboard = () => {
         stock: Number(newProduct.stock),
       };
 
-      const res = await fetchWithAuth('http://localhost:5000/api/products', {
+      const res = await fetchWithAuth('/api/products', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
