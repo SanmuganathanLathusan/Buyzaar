@@ -73,7 +73,26 @@ if (process.env.NODE_ENV !== 'production') {
     });
   });
 } else {
-  // Vercel: connect DB on cold start then export
-  connectDB();
+  // Vercel: Ensure DB is connected before handling requests
+  let isConnected = false;
+  
+  app.use(async (req, res, next) => {
+    if (!isConnected) {
+      try {
+        await mongoose.connect(process.env.MONGO_URI, {
+          serverSelectionTimeoutMS: 5000,
+          socketTimeoutMS: 45000,
+          connectTimeoutMS: 5000,
+        });
+        isConnected = true;
+        console.log('✅ MongoDB Connected');
+      } catch (error) {
+        console.error('❌ MongoDB Connection Failed:', error.message);
+        return res.status(500).json({ message: 'Database connection failed' });
+      }
+    }
+    next();
+  });
+  
   module.exports = app;
 }
