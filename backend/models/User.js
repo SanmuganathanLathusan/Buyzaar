@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: function() { return this.role === 'vendor'; }
   },
+  suspended: {
+    type: Boolean,
+    default: false
+  },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
   phone: String,

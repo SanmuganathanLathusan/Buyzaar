@@ -25,15 +25,13 @@ const getAdminDashboardData = async (req, res) => {
 
     // Process the data for the frontend mapping structure
     const vendorsWithRevenue = recentVendorsList.map((v) => {
-      // In a deep production app, revenue per vendor uses a huge aggregation pipeline across the entire Order and Product collections.
-      // For the immediate dashboard response speed, we structure their basic data first.
       return {
         id: v._id,
         name: v.businessName || v.name,
-        plan: 'Standard', // Baseline platform enrollment plan
+        plan: 'Standard',
         joinDate: v.createdAt ? new Date(v.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recent',
         status: 'Active',
-        revenue: 'Rs. 0' // Default until vendor fulfills specific isolated orders
+        revenue: 'Rs. 0'
       };
     });
 
@@ -50,4 +48,100 @@ const getAdminDashboardData = async (req, res) => {
   }
 };
 
-module.exports = { getAdminDashboardData };
+// @desc    Get all vendors
+// @route   GET /api/admin/vendors
+// @access  Private/Admin
+const getAllVendors = async (req, res) => {
+  try {
+    const vendors = await User.find({ role: 'vendor' })
+      .select('-password')
+      .sort({ createdAt: -1 });
+
+    res.json(vendors);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get all customers
+// @route   GET /api/admin/customers
+// @access  Private/Admin
+const getAllCustomers = async (req, res) => {
+  try {
+    const customers = await User.find({ role: 'customer' })
+      .select('-password')
+      .sort({ createdAt: -1 });
+
+    res.json(customers);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get all orders
+// @route   GET /api/admin/orders
+// @access  Private/Admin
+const getAdminOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({})
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update vendor status
+// @route   PUT /api/admin/vendors/:id
+// @access  Private/Admin
+const updateVendorStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const vendor = await User.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    ).select('-password');
+
+    if (!vendor) {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+
+    res.json({ message: 'Vendor status updated', vendor });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Suspend/Unsuspend customer
+// @route   PUT /api/admin/customers/:id
+// @access  Private/Admin
+const updateCustomerStatus = async (req, res) => {
+  try {
+    const { suspended } = req.body;
+    const customer = await User.findByIdAndUpdate(
+      req.params.id,
+      { suspended },
+      { new: true }
+    ).select('-password');
+
+    if (!customer) {
+      return res.status(404).json({ message: 'Customer not found' });
+    }
+
+    res.json({ message: 'Customer status updated', customer });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { 
+  getAdminDashboardData,
+  getAllVendors,
+  getAllCustomers,
+  getAdminOrders,
+  updateVendorStatus,
+  updateCustomerStatus
+};
