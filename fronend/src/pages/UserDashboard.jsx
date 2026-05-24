@@ -48,17 +48,25 @@ const UserDashboard = () => {
           city: profileData.address?.city || '',
           country: profileData.address?.country || ''
         });
+      } else {
+        const errText = await profileRes.text();
+        console.error('Profile fetch failed:', profileRes.status, errText);
+        toast.error('Failed to load profile');
       }
 
       // Fetch User Orders
       const ordersRes = await fetchWithAuth('/api/orders/myorders');
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json();
-        setOrders(ordersData);
+        setOrders(Array.isArray(ordersData) ? ordersData : []);
+      } else {
+        const errText = await ordersRes.text();
+        console.error('Orders fetch failed:', ordersRes.status, errText);
+        setOrders([]);
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      toast.error('Failed to load dashboard data');
+      toast.error('Failed to load dashboard data. Please refresh.');
     } finally {
       setLoading(false);
     }
@@ -68,11 +76,12 @@ const UserDashboard = () => {
     e.preventDefault();
     try {
       const payload = {
-        phone: editData.phone,
+        name: profile?.name,
+        phone: editData.phone || '',
         address: {
-          street: editData.street,
-          city: editData.city,
-          country: editData.country
+          street: editData.street || '',
+          city: editData.city || '',
+          country: editData.country || ''
         }
       };
 
@@ -84,15 +93,22 @@ const UserDashboard = () => {
       if (res.ok) {
         const updatedProfile = await res.json();
         setProfile(updatedProfile);
+        setEditData({
+          phone: updatedProfile.phone || '',
+          street: updatedProfile.address?.street || '',
+          city: updatedProfile.address?.city || '',
+          country: updatedProfile.address?.country || ''
+        });
         setIsEditing(false);
-        toast.success('Profile updated successfully');
+        toast.success('Profile updated successfully! ✓');
       } else {
         const errData = await res.json();
+        console.error('Update failed:', errData);
         toast.error(errData.message || 'Failed to update profile');
       }
     } catch (error) {
       console.error('Update error:', error);
-      toast.error('Could not connect to server');
+      toast.error('Could not connect to server. Please try again.');
     }
   };
 

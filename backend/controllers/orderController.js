@@ -6,24 +6,41 @@ const Order = require('../models/Order');
 const createOrder = async (req, res) => {
   const { orderItems, shippingAddress, paymentMethod, itemsPrice, shippingPrice, totalPrice } = req.body;
 
+  // Validate required fields
   if (!orderItems || orderItems.length === 0) {
-    return res.status(400).json({ message: 'No order items' });
+    return res.status(400).json({ message: 'No order items provided' });
+  }
+  
+  if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.address || !shippingAddress.city) {
+    return res.status(400).json({ message: 'Incomplete shipping address' });
+  }
+
+  if (!paymentMethod) {
+    return res.status(400).json({ message: 'Payment method is required' });
   }
 
   try {
     const order = new Order({
       customer: req.user._id,
-      orderItems,
+      orderItems: orderItems.map(item => ({
+        product: item.product || item._id,
+        title: item.title,
+        qty: item.quantity || item.qty || 1,
+        price: item.price,
+        image: item.image
+      })),
       shippingAddress,
       paymentMethod,
-      itemsPrice,
-      shippingPrice,
-      totalPrice
+      itemsPrice: itemsPrice || 0,
+      shippingPrice: shippingPrice || 0,
+      totalPrice: totalPrice || 0,
+      status: 'Pending'
     });
 
     const createdOrder = await order.save();
     res.status(201).json(createdOrder);
   } catch (error) {
+    console.error('Error creating order:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -33,9 +50,17 @@ const createOrder = async (req, res) => {
 // @access  Private/Customer
 const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ customer: req.user._id });
+    const orders = await Order.find({ customer: req.user._id })
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    if (!orders || orders.length === 0) {
+      return res.json([]);
+    }
+    
     res.json(orders);
   } catch (error) {
+    console.error('Error fetching user orders:', error);
     res.status(500).json({ message: error.message });
   }
 };

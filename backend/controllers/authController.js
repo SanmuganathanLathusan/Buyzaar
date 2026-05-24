@@ -97,11 +97,21 @@ const updateUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
-      user.name = req.body.name || user.name;
-      user.phone = req.body.phone || user.phone;
-      user.address = req.body.address || user.address;
+      // Update basic fields
+      if (req.body.name) user.name = req.body.name;
+      if (req.body.phone) user.phone = req.body.phone;
       
-      if (req.body.password) {
+      // Update address as nested object
+      if (req.body.address) {
+        user.address = {
+          street: req.body.address.street || user.address?.street || '',
+          city: req.body.address.city || user.address?.city || '',
+          country: req.body.address.country || user.address?.country || ''
+        };
+      }
+      
+      // Update password if provided
+      if (req.body.password && req.body.password.trim()) {
         user.password = req.body.password;
       }
 

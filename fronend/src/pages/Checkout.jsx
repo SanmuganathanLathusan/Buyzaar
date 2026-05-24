@@ -86,6 +86,12 @@ const Checkout = () => {
     e.preventDefault();
     if (!token) { toast.error('You must be logged in to place an order.'); navigate('/login'); return; }
     if (cartItems.length === 0) { toast.error('Your cart is empty'); return; }
+    
+    // Validate form fields
+    if (!formData.fullName || !formData.address || !formData.city || !formData.phone) {
+      toast.error('Please fill in all shipping details');
+      return;
+    }
 
     const hasLegacyItems = cartItems.some((item) => !item._id || item._id.toString().length !== 24);
     if (hasLegacyItems) {
@@ -109,7 +115,7 @@ const Checkout = () => {
           fullName:   formData.fullName,
           address:    formData.address,
           city:       formData.city,
-          postalCode: formData.postalCode,
+          postalCode: formData.postalCode || '',
           phone:      formData.phone
         },
         paymentMethod,
@@ -131,7 +137,8 @@ const Checkout = () => {
         const errData = await response.json();
         toast.error(errData.message || 'Failed to place order.');
       }
-    } catch {
+    } catch (error) {
+      console.error('Order error:', error);
       toast.error('Could not connect to the server. Please try again.');
     } finally {
       setIsSubmitting(false);
