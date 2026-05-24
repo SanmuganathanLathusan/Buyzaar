@@ -1,0 +1,16 @@
+{
+  "name": "buyzaar-monorepo",
+  "version": "1.0.0",
+  "description": "Buyzaar - Multi-Vendor Smart Shop",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "fronend"
+  ],
+  "scripts": {
+    "install-all": "npm install && npm install --prefix backend && npm install --prefix fronend",
+    "dev": "echo 'Run backend and frontend separately with: npm run dev --prefix backend and npm run dev --prefix fronend'",
+    "build": "echo 'This is a monorepo. Deploy backend and fronend separately to Vercel.'",
+    "lint": "npm run lint --prefix fronend"
+  }
+}

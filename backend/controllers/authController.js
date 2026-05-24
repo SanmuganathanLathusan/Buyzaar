@@ -157,8 +157,9 @@ const forgotPassword = async (req, res) => {
     
     await user.save({ validateBeforeSave: false });
 
-    // Create reset url (Since this is localhost testing without SMTP)
-    const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+    // Create reset url using CLIENT_URL from environment
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
     const message = `
       <h1>You requested a password reset</h1>

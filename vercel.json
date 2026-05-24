@@ -1,24 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "cd fronend && npm run build",
-  "builds": [
-    {
-      "src": "backend/server.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxLambdaSize": "50mb",
-        "nodeVersion": "24.x"
-      }
+  "buildCommand": "npm run build",
+  "builds": [],
+  "routes": [],
+  "projects": {
+    "default": {
+      "path": "./fronend",
+      "command": "npm run build",
+      "outputDirectory": "dist"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api(.*)",
-      "dest": "backend/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "fronend/dist/index.html"
-    }
-  ]
+  }
 }
