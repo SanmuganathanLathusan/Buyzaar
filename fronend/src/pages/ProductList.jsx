@@ -20,9 +20,8 @@ const ProductList = () => {
   const [sortBy, setSortBy]             = useState('best');
   const [isMobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  const searchQuery     = searchParams.get('search')      || '';
-  const categoryQuery   = searchParams.get('category')    || '';
-  const subcategoryQuery= searchParams.get('subcategory') || '';
+  const searchQuery     = searchParams.get('search')  || '';
+  const categoryQuery   = searchParams.get('category') || '';
 
   const [products, setProducts] = useState(STATIC_PRODUCTS);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,8 +33,7 @@ const ProductList = () => {
         setIsLoading(true);
         let url = '/api/products?';
         if (searchQuery)      url += `keyword=${encodeURIComponent(searchQuery)}&`;
-        if (subcategoryQuery) url += `category=${encodeURIComponent(subcategoryQuery)}&`;
-        else if (categoryQuery) url += `category=${encodeURIComponent(categoryQuery)}&`;
+        if (categoryQuery)    url += `category=${encodeURIComponent(categoryQuery)}&`;
 
         const response = await apiFetch(url);
         if (!response.ok) throw new Error('Failed to fetch products');
@@ -49,19 +47,14 @@ const ProductList = () => {
       }
     };
     fetchProducts();
-  }, [searchQuery, categoryQuery, subcategoryQuery]);
+  }, [searchQuery, categoryQuery]);
 
   const handleCategoryToggle = (name) => {
     const p = new URLSearchParams(searchParams);
-    if (subcategoryQuery === name) p.delete('subcategory');
-    else p.set('subcategory', name);
+    if (categoryQuery === name) p.delete('category');
+    else p.set('category', name);
     setSearchParams(p);
   };
-
-  let currentSubcategories = CATEGORIES.map((c) => c.name);
-  if (categoryQuery && CATEGORY_HIERARCHY[categoryQuery]) {
-    currentSubcategories = CATEGORY_HIERARCHY[categoryQuery];
-  }
 
   const filteredProducts = useMemo(() => {
     let arr = products.filter((p) => {
@@ -82,7 +75,7 @@ const ProductList = () => {
           <SlidersHorizontal className="w-4 h-4 text-primary" />
           Filters
         </div>
-        {(subcategoryQuery || priceRange !== 500000) && (
+        {(categoryQuery || priceRange !== 500000) && (
           <button
             onClick={() => { setSearchParams(new URLSearchParams()); setPriceRange(500000); }}
             className="text-xs text-primary hover:text-primary-hover font-medium flex items-center gap-1"
@@ -92,21 +85,21 @@ const ProductList = () => {
         )}
       </div>
 
-      {/* Category / subcategory filter */}
+      {/* Category filter */}
       <div>
         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">
-          {categoryQuery ? 'Subcategories' : 'Categories'}
+          Categories
         </h3>
         <ul className="space-y-1">
-          {currentSubcategories.map((name, idx) => (
-            <li key={idx}>
+          {CATEGORIES.map((cat) => (
+            <li key={cat.id}>
               <label className="flex items-center gap-3 px-2 py-2 rounded-xl cursor-pointer hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors group">
                 <div className={`w-4 h-4 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                  subcategoryQuery === name
+                  categoryQuery === cat.name
                     ? 'bg-primary border-primary'
                     : 'border-slate-300 dark:border-slate-600 group-hover:border-primary'
                 }`}>
-                  {subcategoryQuery === name && (
+                  {categoryQuery === cat.name && (
                     <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 8" fill="none">
                       <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
@@ -115,11 +108,11 @@ const ProductList = () => {
                 <input
                   type="checkbox"
                   className="sr-only"
-                  checked={subcategoryQuery === name}
-                  onChange={() => handleCategoryToggle(name)}
+                  checked={categoryQuery === cat.name}
+                  onChange={() => handleCategoryToggle(cat.name)}
                 />
-                <span className={`text-sm font-medium transition-colors ${subcategoryQuery === name ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}>
-                  {name}
+                <span className={`text-sm font-medium transition-colors ${categoryQuery === cat.name ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}>
+                  {cat.name}
                 </span>
               </label>
             </li>
@@ -166,12 +159,6 @@ const ProductList = () => {
           {categoryQuery ? (
             <>
               <span className="text-secondary dark:text-white font-medium">{categoryQuery}</span>
-              {subcategoryQuery && (
-                <>
-                  <span className="text-slate-300 dark:text-slate-600">/</span>
-                  <span className="text-secondary dark:text-white font-medium">{subcategoryQuery}</span>
-                </>
-              )}
             </>
           ) : searchQuery ? (
             <span className="text-secondary dark:text-white font-medium">Search: "{searchQuery}"</span>
