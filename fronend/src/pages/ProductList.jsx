@@ -199,7 +199,7 @@ const ProductList = () => {
                 >
                   <Filter className="w-4 h-4" />
                   Filters
-                  {(subcategoryQuery || priceRange !== 500000) && (
+                  {(categoryQuery || priceRange !== 500000) && (
                     <span className="w-4 h-4 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">!</span>
                   )}
                 </button>
@@ -226,12 +226,12 @@ const ProductList = () => {
             </div>
 
             {/* Active filter pills */}
-            {(subcategoryQuery || priceRange !== 500000) && (
+            {(categoryQuery || priceRange !== 500000) && (
               <div className="flex flex-wrap gap-2 mb-4">
-                {subcategoryQuery && (
+                {categoryQuery && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20">
-                    {subcategoryQuery}
-                    <button onClick={() => { const p = new URLSearchParams(searchParams); p.delete('subcategory'); setSearchParams(p); }}>
+                    {categoryQuery}
+                    <button onClick={() => { const p = new URLSearchParams(searchParams); p.delete('category'); setSearchParams(p); }}>
                       <X className="w-3 h-3" />
                     </button>
                   </span>
