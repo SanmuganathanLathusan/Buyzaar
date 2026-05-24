@@ -49,7 +49,17 @@ const Auth = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const data = await response.json();
+        
+        // Parse JSON safely
+        let data;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(`Server returned ${response.status}: ${text || 'No response'}`);
+        }
+        
         if (!response.ok) throw new Error(data.message || 'Google Auth failed');
         login(data, data.token);
         toast.success('Signed in with Google!');
@@ -80,7 +90,17 @@ const Auth = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const data = await response.json();
+      
+      // Parse JSON safely
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(`Server returned ${response.status}: ${text || 'No response'}`);
+      }
+      
       if (!response.ok) throw new Error(data.message || 'Something went wrong');
 
       if (isLogin) {
@@ -109,7 +129,17 @@ const Auth = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email })
       });
-      const data = await response.json();
+      
+      // Parse JSON safely
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(`Server returned ${response.status}: ${text || 'No response'}`);
+      }
+      
       if (!response.ok) throw new Error(data.message);
       toast.success(data.message);
       setIsForgotPassword(false);
