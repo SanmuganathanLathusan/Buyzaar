@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "buildCommand": "cd fronend && npm run build",
   "builds": [
     {
       "src": "backend/server.js",
@@ -8,28 +9,16 @@
         "maxLambdaSize": "50mb",
         "nodeVersion": "18.x"
       }
-    },
-    {
-      "src": "fronend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "buildCommand": "npm run build",
-        "outputDirectory": "dist"
-      }
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "/api(.*)",
       "dest": "backend/server.js"
     },
     {
-      "src": "/",
-      "dest": "fronend/index.html"
-    },
-    {
       "src": "/(.*)",
-      "dest": "fronend/index.html"
+      "dest": "fronend/dist/index.html"
     }
   ]
 }
