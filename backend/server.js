@@ -4,6 +4,18 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+// ────────────────────────────────────────────────────────────────────────────
+// Validate Required Environment Variables
+// ────────────────────────────────────────────────────────────────────────────
+const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars);
+  console.error('Please set these in your Vercel environment variables');
+  // Don't exit - let Vercel show error
+}
+
 const app = express();
 
 // Import Routes
