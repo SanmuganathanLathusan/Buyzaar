@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Logo = ({ className = "h-9", textClassName = "text-xl font-black" }) => {
+const Logo = ({ className = "h-9", textClassName = "text-xl font-black", forceWhite = false }) => {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       {/* Premium SVG Icon */}
@@ -64,7 +64,7 @@ const Logo = ({ className = "h-9", textClassName = "text-xl font-black" }) => {
       </svg>
 
       {/* Brand Text */}
-      <span className={`${textClassName} tracking-tight text-secondary dark:text-white`}>
+      <span className={`${textClassName} tracking-tight ${forceWhite ? 'text-white' : 'text-secondary dark:text-white'}`}>
         Buy<span className="bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">zaar</span>
       </span>
     </div>

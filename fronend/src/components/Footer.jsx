@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Zap, Mail, Phone, MapPin, Facebook, Twitter, Instagram,
   Youtube, CreditCard, Shield, ArrowRight
 } from 'lucide-react';
 import Logo from './Logo';
+import toast from 'react-hot-toast';
 
 const FOOTER_LINKS = {
   Company: [
@@ -34,7 +35,22 @@ const SOCIALS = [
   { icon: Youtube,   href: '#', label: 'Youtube'   },
 ];
 
-const Footer = () => (
+const Footer = () => {
+  const [email, setEmail] = useState('');
+
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    if (!email) {
+      toast.error('Please enter an email address.');
+      return;
+    }
+    
+    // Simulate API call
+    toast.success('Successfully subscribed to our newsletter!');
+    setEmail('');
+  };
+
+  return (
   <footer className="bg-slate-950 text-slate-400 mt-auto">
     {/* ── Newsletter band ── */}
     <div className="border-b border-slate-800">
@@ -45,11 +61,13 @@ const Footer = () => (
             <p className="text-sm">Get exclusive deals &amp; new arrivals delivered to your inbox.</p>
           </div>
           <form
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={handleSubscribe}
             className="flex w-full max-w-md gap-2"
           >
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address"
               className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
             />
@@ -72,7 +90,7 @@ const Footer = () => (
         {/* Brand column */}
         <div className="lg:col-span-2">
           <Link to="/" className="flex items-center mb-5 group">
-            <Logo className="h-14" />
+            <Logo className="h-14" forceWhite={true} />
           </Link>
           <p className="text-sm leading-relaxed mb-6 max-w-xs">
             Your trusted multi-vendor marketplace connecting buyers with the best sellers across Sri Lanka and beyond.
@@ -145,6 +163,7 @@ const Footer = () => (
       </div>
     </div>
   </footer>
-);
+  );
+};
 
 export default Footer;

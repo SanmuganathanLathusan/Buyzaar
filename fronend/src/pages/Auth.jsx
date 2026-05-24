@@ -201,41 +201,37 @@ const Auth = () => {
       <div className="w-full max-w-5xl flex rounded-3xl overflow-hidden shadow-card-xl border border-border dark:border-border-dark">
 
         {/* ── Left brand panel (hidden on mobile) ── */}
-        <div className="hidden lg:flex flex-col w-2/5 bg-gradient-to-br from-primary via-cyan-500 to-blue-600 p-10 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-noise opacity-10 pointer-events-none" />
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="hidden lg:flex flex-col w-2/5 relative overflow-hidden bg-slate-900 border-r border-border dark:border-border-dark">
+          {/* Main Delivery Graphic */}
+          <div className="absolute inset-0 z-0">
+            <img 
+              src="/images/auth_delivery_banner.png" 
+              alt="Fast Delivery Service" 
+              className="w-full h-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20" />
+          </div>
 
-          <div className="relative z-10 flex flex-col h-full">
+          <div className="relative z-10 flex flex-col h-full p-10 justify-between text-white">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 mb-10">
-              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-2xl font-black tracking-tight">Buyzaar</span>
+            <Link to="/" className="flex items-center gap-2.5">
+             
+              <span className="text-2xl font-black tracking-tight drop-shadow-md">Buyzaar</span>
             </Link>
 
-            <div className="flex-1">
-              <h2 className="text-3xl font-black leading-tight mb-3">
+            <div className="mt-auto">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/90 backdrop-blur-md text-white text-xs font-bold mb-4 shadow-lg border border-white/20">
+                <Zap className="w-3.5 h-3.5" />
+                Lightning Fast Delivery
+              </div>
+              <h2 className="text-3xl font-black leading-tight mb-3 drop-shadow-sm">
                 {isLogin ? 'Welcome back!' : 'Join Buyzaar today'}
               </h2>
-              <p className="text-white/75 text-sm leading-relaxed mb-8">
-                {isLogin
-                  ? 'Sign in to access your orders, wishlist, and exclusive deals.'
-                  : 'Create a free account and start discovering amazing products.'}
+              <p className="text-white/80 text-sm leading-relaxed mb-6 max-w-sm drop-shadow-sm">
+                Experience seamless e-commerce with our reliable vendors and premium delivery partners across Sri Lanka.
               </p>
-
-              <ul className="space-y-3">
-                {BENEFITS.map((b) => (
-                  <li key={b} className="flex items-center gap-3 text-sm">
-                    <CheckCircle className="w-4 h-4 text-white/80 flex-shrink-0" />
-                    <span className="text-white/90">{b}</span>
-                  </li>
-                ))}
-              </ul>
+              
             </div>
-
-            <p className="text-white/50 text-xs mt-10">© {new Date().getFullYear()} Buyzaar. All rights reserved.</p>
           </div>
         </div>
 
@@ -301,7 +297,7 @@ const Auth = () => {
                         type="text" name="name" required={!isLogin}
                         value={formData.name} onChange={handleInputChange}
                         className={inputCls}
-                        placeholder={userType === 'vendor' ? 'e.g. Super Electronics Ltd.' : 'e.g. John Doe'}
+                        placeholder={userType === 'vendor' ? 'e.g. Super Electronics Ltd.' : 'e.g. Lathusan'}
                       />
                     </Field>
                   </motion.div>
@@ -312,7 +308,7 @@ const Auth = () => {
                 <input
                   type="email" name="email" required
                   value={formData.email} onChange={handleInputChange}
-                  className={inputCls} placeholder="name@example.com"
+                  className={inputCls} placeholder="lathu@example.com"
                 />
               </Field>
 

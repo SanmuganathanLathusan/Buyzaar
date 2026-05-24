@@ -186,11 +186,11 @@ const Checkout = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField label="Full Name" icon={User} required>
                         <input required name="fullName" value={formData.fullName} onChange={handleChange}
-                          type="text" className={inputCls(true)} placeholder="John Doe" />
+                          type="text" className={inputCls(true)} placeholder="Lathusan" />
                       </FormField>
                       <FormField label="Phone Number" icon={Phone} required>
                         <input required name="phone" value={formData.phone} onChange={handleChange}
-                          type="tel" className={inputCls(true)} placeholder="+94 77 123 4567" />
+                          type="tel" className={inputCls(true)} placeholder="+94 77 8410 323" />
                       </FormField>
                       <div className="md:col-span-2">
                         <FormField label="Street Address" icon={MapPin} required>

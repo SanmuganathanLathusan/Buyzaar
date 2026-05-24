@@ -17,7 +17,7 @@ const CONTACT_INFO = [
   {
     icon: Phone,
     title: 'Phone Number',
-    detail: '+1 (555) 123-4567',
+    detail: '+94 778410323',
     sub: 'Mon – Fri, 9am – 6pm',
     color: 'text-emerald-500',
     bg: 'bg-emerald-50 dark:bg-emerald-950/30',
@@ -25,7 +25,7 @@ const CONTACT_INFO = [
   {
     icon: Mail,
     title: 'Email Address',
-    detail: 'support@buyzaar.com',
+    detail: 'buyzaar@gmail.com',
     sub: 'We reply within 24 hours',
     color: 'text-violet-500',
     bg: 'bg-violet-50 dark:bg-violet-950/30',

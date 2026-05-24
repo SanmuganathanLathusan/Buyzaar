@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight, ArrowRight, Truck, Headphones, Percent, RefreshCw, Star, Zap, ShieldCheck, Package } from 'lucide-react';
+import { ChevronRight, ArrowRight, Truck, Headphones, Percent, RefreshCw, Star, Flame, ShieldCheck, Package } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { ProductCardSkeleton } from '../components/Skeleton';
@@ -134,7 +134,7 @@ const Home = () => {
 
             <div className="relative z-10 px-8 md:px-12 py-10 max-w-lg">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-5 border border-primary/20">
-                <Zap className="w-3 h-3" />
+                <Flame className="w-3 h-3" />
                 Limited Time Offer
               </div>
               <p className="text-slate-500 dark:text-slate-300 text-sm mb-2 font-medium">
