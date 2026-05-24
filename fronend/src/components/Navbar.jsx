@@ -16,15 +16,11 @@ const NAV_LINKS = [
 ];
 
 const CATEGORY_LINKS = [
-  { name: 'Fashion Collection', emoji: '👗' },
-  { name: 'Electronics Item',   emoji: '💻' },
-  { name: 'Home Appliance',     emoji: '🏠' },
-  { name: 'Kitchen Item',       emoji: '🍳' },
-  { name: 'Furniture',          emoji: '🛋️' },
-  { name: 'Food',               emoji: '🍔' },
-  { name: 'Gadgets',            emoji: '📱' },
-  { name: 'Toys and Games',     emoji: '🎮' },
-  { name: 'Health & beauty',    emoji: '💄' },
+  { name: 'Fashion',        emoji: '👗', sub: 'Fashion Collection & Beauty' },
+  { name: 'Electronics',    emoji: '💻', sub: 'Electronics & Gadgets' },
+  { name: 'Home & Living',  emoji: '🏠', sub: 'Appliances, Kitchen & Furniture' },
+  { name: 'Food & Grocery', emoji: '🍔', sub: 'Fresh & packaged foods' },
+  { name: 'Toys & Games',   emoji: '🎮', sub: 'Kids toys & board games' },
 ];
 
 const Navbar = () => {
@@ -141,10 +137,17 @@ const Navbar = () => {
                           key={cat.name}
                           to={`/products?category=${encodeURIComponent(cat.name)}`}
                           onClick={() => setIsCatOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-primary/8 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary transition-colors"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/8 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary transition-colors group"
                         >
-                          <span className="text-base">{cat.emoji}</span>
-                          {cat.name}
+                          <span className="text-xl flex-shrink-0">{cat.emoji}</span>
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors">
+                              {cat.name}
+                            </div>
+                            {cat.sub && (
+                              <div className="text-[11px] text-slate-400 truncate">{cat.sub}</div>
+                            )}
+                          </div>
                         </Link>
                       ))}
                     </div>
@@ -364,15 +367,22 @@ const Navbar = () => {
                 ))}
                 <div className="pt-2 border-t border-border dark:border-border-dark">
                   <div className="text-2xs font-bold uppercase tracking-widest text-slate-400 px-4 py-2">Categories</div>
-                  <div className="grid grid-cols-2 gap-1">
+                  <div className="space-y-1">
                     {CATEGORY_LINKS.map((cat) => (
                       <Link
                         key={cat.name}
                         to={`/products?category=${encodeURIComponent(cat.name)}`}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-slate-700 dark:text-slate-200 hover:bg-primary/8 hover:text-primary transition-colors"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/8 hover:text-primary transition-colors group"
                       >
-                        <span>{cat.emoji}</span>
-                        <span className="truncate text-xs font-medium">{cat.name}</span>
+                        <span className="text-xl flex-shrink-0">{cat.emoji}</span>
+                        <div>
+                          <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors">
+                            {cat.name}
+                          </div>
+                          {cat.sub && (
+                            <div className="text-[11px] text-slate-400">{cat.sub}</div>
+                          )}
+                        </div>
                       </Link>
                     ))}
                   </div>

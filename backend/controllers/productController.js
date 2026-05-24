@@ -5,13 +5,34 @@ const Product = require('../models/Product');
 // @access  Public
 const getProducts = async (req, res) => {
   try {
-    const keyword = req.query.keyword ? {
-      title: { $regex: req.query.keyword, $options: 'i' }
-    } : {};
-    
+    const keyword = req.query.keyword
+      ? { title: { $regex: req.query.keyword, $options: 'i' } }
+      : {};
+
     let categoryFilter = {};
-    if (req.query.category) {
-      // Case-insensitive category matching
+
+    // 1) cat[] array param: ?cat[]=Fashion Collection&cat[]=Watches
+    //    URLSearchParams / qs parses repeated params as an array
+    const catArray = req.query['cat[]'];
+    if (catArray) {
+      const cats = (Array.isArray(catArray) ? catArray : [catArray])
+        .map((c) => c.trim())
+        .filter(Boolean);
+      if (cats.length > 0) {
+        categoryFilter = {
+          category: { $in: cats.map((c) => new RegExp(`^${c}$`, 'i')) },
+        };
+      }
+    // 2) Legacy comma-joined: ?categories=A,B,C
+    } else if (req.query.categories) {
+      const cats = req.query.categories.split(',').map((c) => c.trim()).filter(Boolean);
+      if (cats.length > 0) {
+        categoryFilter = {
+          category: { $in: cats.map((c) => new RegExp(`^${c}$`, 'i')) },
+        };
+      }
+    // 3) Single category: ?category=Fashion Collection
+    } else if (req.query.category) {
       categoryFilter = { category: { $regex: `^${req.query.category}$`, $options: 'i' } };
     }
 

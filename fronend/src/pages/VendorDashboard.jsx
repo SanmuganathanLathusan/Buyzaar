@@ -16,6 +16,7 @@ const VendorDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   const [newProduct, setNewProduct] = useState({
     title: '', description: '', price: '', originalPrice: '', discount: '', category: 'Mobiles', image: '', stock: ''
@@ -128,10 +129,45 @@ const VendorDashboard = () => {
     }
   };
 
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    try {
+      const res = await fetchWithAuth(`/api/products/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success("Product deleted successfully!");
+        fetchDashboardData();
+      } else {
+        const errData = await res.json();
+        toast.error(`Error: ${errData.message}`);
+      }
+    } catch(err) {
+      toast.error('Failed to delete product');
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  const customersMap = new Map();
+  orders.forEach(order => {
+    if(order.customer && order.customer._id) {
+      const spent = order.orderItems.filter(i => i.product?.vendor === user?._id).reduce((sum, item) => sum + item.price * item.qty, 0);
+      if(!customersMap.has(order.customer._id)) {
+        customersMap.set(order.customer._id, {
+          ...order.customer,
+          orderCount: 1,
+          totalSpent: spent
+        });
+      } else {
+        const c = customersMap.get(order.customer._id);
+        c.orderCount += 1;
+        c.totalSpent += spent;
+      }
+    }
+  });
+  const uniqueCustomersList = Array.from(customersMap.values());
 
   return (
     <div className="min-h-screen bg-background dark:bg-background-dark flex flex-col md:flex-row pb-12 md:pb-0">
@@ -143,21 +179,21 @@ const VendorDashboard = () => {
         </div>
 
         <nav className="flex-none flex overflow-x-auto md:flex-1 md:flex-col px-2 md:px-4 py-2 md:py-0 md:space-y-1.5 gap-1.5 scrollbar-none">
-          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 bg-primary/8 text-primary rounded-xl font-bold text-sm md:text-base text-left">
+          <button onClick={() => setActiveTab('dashboard')} className={`flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl font-bold text-sm md:text-base text-left transition-colors ${activeTab === 'dashboard' ? 'bg-primary/8 text-primary' : 'text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800'}`}>
             <TrendingUp size={18} className="md:w-5 md:h-5" /> <span>Dashboard</span>
           </button>
-          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800 rounded-xl font-semibold text-sm md:text-base text-left transition-colors">
+          <button onClick={() => setActiveTab('products')} className={`flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl font-bold text-sm md:text-base text-left transition-colors ${activeTab === 'products' ? 'bg-primary/8 text-primary' : 'text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800'}`}>
             <Package size={18} className="md:w-5 md:h-5" /> <span>Products</span>
           </button>
-          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800 rounded-xl font-semibold text-sm md:text-base text-left transition-colors flex justify-between items-center w-full">
+          <button onClick={() => setActiveTab('orders')} className={`flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl font-bold text-sm md:text-base text-left transition-colors flex justify-between items-center w-full ${activeTab === 'orders' ? 'bg-primary/8 text-primary' : 'text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800'}`}>
             <span className="flex items-center gap-2 md:gap-3"><ShoppingBag size={18} className="md:w-5 md:h-5" /> <span>Orders</span></span>
             {orders.length > 0 && (
-              <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold px-2 py-0.5 rounded-full border border-border dark:border-border-dark">
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${activeTab === 'orders' ? 'bg-primary/20 border-primary/30 text-primary' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-border dark:border-border-dark'}`}>
                 {orders.length}
               </span>
             )}
           </button>
-          <button className="flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800 rounded-xl font-semibold text-sm md:text-base text-left transition-colors">
+          <button onClick={() => setActiveTab('customers')} className={`flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl font-bold text-sm md:text-base text-left transition-colors ${activeTab === 'customers' ? 'bg-primary/8 text-primary' : 'text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800'}`}>
             <Users size={18} className="md:w-5 md:h-5" /> <span>Customers</span>
           </button>
 
@@ -180,15 +216,22 @@ const VendorDashboard = () => {
       <main className="flex-1 p-4 md:p-8">
         <header className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-black text-secondary dark:text-white tracking-tight">Dashboard Overview</h1>
+            <h1 className="text-2xl font-black text-secondary dark:text-white tracking-tight">
+              {activeTab === 'dashboard' && 'Dashboard Overview'}
+              {activeTab === 'products' && 'My Products'}
+              {activeTab === 'orders' && 'Manage Orders'}
+              {activeTab === 'customers' && 'My Customers'}
+            </h1>
             <p className="text-sm text-slate-500">Welcome back, {user?.name || 'Vendor'}</p>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="btn-primary btn-md rounded-xl gap-2 font-bold"
-          >
-            <Plus size={16} /> Add Product
-          </button>
+          {(activeTab === 'dashboard' || activeTab === 'products') && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="btn-primary btn-md rounded-xl gap-2 font-bold"
+            >
+              <Plus size={16} /> Add Product
+            </button>
+          )}
         </header>
 
         {loading ? (
@@ -201,7 +244,9 @@ const VendorDashboard = () => {
           </div>
         ) : (
           <>
-            {/* Stats Grid */}
+            {activeTab === 'dashboard' && (
+              <>
+                {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {stats.map((stat, i) => (
                 <motion.div
@@ -322,6 +367,120 @@ const VendorDashboard = () => {
                 </div>
               </div>
             </div>
+              </>
+            )}
+
+            {activeTab === 'products' && (
+              <div className="bg-white dark:bg-surface-dark rounded-3xl border border-border dark:border-border-dark shadow-card overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-surface-muted dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest border-b border-border dark:border-border-dark">
+                        <th className="px-6 py-4">Product</th>
+                        <th className="px-6 py-4">Category</th>
+                        <th className="px-6 py-4">Price</th>
+                        <th className="px-6 py-4">Stock</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border dark:divide-border-dark">
+                      {products.length === 0 ? (
+                        <tr><td colSpan="5" className="px-6 py-8 text-center text-sm text-slate-400">No products found.</td></tr>
+                      ) : (
+                        products.map(prod => (
+                          <tr key={prod._id} className="hover:bg-surface-muted/50 dark:hover:bg-slate-900/30 transition-colors">
+                            <td className="px-6 py-4 flex items-center gap-3">
+                              <img src={prod.image} alt={prod.title} className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
+                              <span className="text-sm font-semibold text-secondary dark:text-white truncate max-w-[200px]">{prod.title}</span>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-slate-500">{prod.category}</td>
+                            <td className="px-6 py-4 text-sm font-bold text-primary">Rs. {prod.price.toLocaleString()}</td>
+                            <td className="px-6 py-4 text-sm">
+                              <span className={`px-2 py-1 rounded-lg ${prod.stock > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                {prod.stock} in stock
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <button onClick={() => handleDeleteProduct(prod._id)} className="text-red-500 hover:text-red-700 text-sm font-medium">Delete</button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'orders' && (
+              <div className="bg-white dark:bg-surface-dark rounded-3xl border border-border dark:border-border-dark shadow-card overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-surface-muted dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest border-b border-border dark:border-border-dark">
+                        <th className="px-6 py-4">Order ID</th>
+                        <th className="px-6 py-4">Customer</th>
+                        <th className="px-6 py-4">Date</th>
+                        <th className="px-6 py-4">Total</th>
+                        <th className="px-6 py-4">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border dark:divide-border-dark">
+                      {orders.length === 0 ? (
+                        <tr><td colSpan="5" className="px-6 py-8 text-center text-sm text-slate-400">No orders found.</td></tr>
+                      ) : (
+                        orders.map(order => (
+                          <tr key={order._id} className="hover:bg-surface-muted/50 dark:hover:bg-slate-900/30 transition-colors">
+                            <td className="px-6 py-4 text-sm font-bold text-primary">#{order._id?.substring(order._id.length - 6).toUpperCase()}</td>
+                            <td className="px-6 py-4 text-sm font-semibold text-slate-600 dark:text-slate-300">{order.customer?.name || 'Guest'}</td>
+                            <td className="px-6 py-4 text-sm text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</td>
+                            <td className="px-6 py-4 text-sm font-bold text-secondary dark:text-white">
+                              Rs. {order.orderItems.filter(i => i.product?.vendor === user?._id).reduce((sum, item) => sum + item.price * item.qty, 0).toLocaleString()}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(order.status)}`}>
+                                {order.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'customers' && (
+              <div className="bg-white dark:bg-surface-dark rounded-3xl border border-border dark:border-border-dark shadow-card overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-surface-muted dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest border-b border-border dark:border-border-dark">
+                        <th className="px-6 py-4">Customer Name</th>
+                        <th className="px-6 py-4">Email</th>
+                        <th className="px-6 py-4">Orders</th>
+                        <th className="px-6 py-4">Total Spent</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border dark:divide-border-dark">
+                      {uniqueCustomersList.length === 0 ? (
+                        <tr><td colSpan="4" className="px-6 py-8 text-center text-sm text-slate-400">No customers found.</td></tr>
+                      ) : (
+                        uniqueCustomersList.map(c => (
+                          <tr key={c._id} className="hover:bg-surface-muted/50 dark:hover:bg-slate-900/30 transition-colors">
+                            <td className="px-6 py-4 text-sm font-bold text-secondary dark:text-white">{c.name}</td>
+                            <td className="px-6 py-4 text-sm text-slate-500">{c.email}</td>
+                            <td className="px-6 py-4 text-sm font-semibold">{c.orderCount}</td>
+                            <td className="px-6 py-4 text-sm font-bold text-primary">Rs. {c.totalSpent.toLocaleString()}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>

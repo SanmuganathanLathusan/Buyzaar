@@ -34,7 +34,7 @@ const PROMO_CARDS = [
     accent: 'text-blue-600 dark:text-blue-400',
     tag: 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300',
     img: '/images/promo_earbuds_1777814089396.png',
-    link: '/products?category=Gadgets',
+    link: '/product/69bf6a0f7510d13f10c0155a',
   },
   {
     category: 'Bundle Package',
@@ -44,7 +44,7 @@ const PROMO_CARDS = [
     accent: 'text-orange-600 dark:text-orange-400',
     tag: 'bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300',
     img: '/images/promo_chocolates_1777814134245.png',
-    link: '/products?category=Food',
+    link: '/product/69bf6a0f7510d13f10c0155b',
   },
   {
     category: "Valentine's Offer",
@@ -54,7 +54,7 @@ const PROMO_CARDS = [
     accent: 'text-pink-600 dark:text-pink-400',
     tag: 'bg-pink-100 dark:bg-pink-900 text-pink-600 dark:text-pink-300',
     img: '/images/promo_ring_1777814170273.png',
-    link: '/products?category=Fashion%20Collection',
+    link: '/product/69bf6a0f7510d13f10c0155c',
   },
   {
     category: 'New Arrival',
@@ -64,7 +64,7 @@ const PROMO_CARDS = [
     accent: 'text-purple-600 dark:text-purple-400',
     tag: 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300',
     img: '/images/promo_chair_1777814269040.png',
-    link: '/products?category=Furniture',
+    link: '/product/69bf6a0f7510d13f10c0155d',
   },
 ];
 

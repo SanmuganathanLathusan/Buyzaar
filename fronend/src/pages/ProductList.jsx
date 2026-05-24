@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Filter, ChevronDown, Frown, SlidersHorizontal, X, Search } from 'lucide-react';
+import { Filter, ChevronDown, Frown, SlidersHorizontal, X, Search, Tag } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import { ProductCardSkeleton } from '../components/Skeleton';
-import { PRODUCTS as STATIC_PRODUCTS, CATEGORIES, CATEGORY_HIERARCHY } from '../data/products';
+import { PRODUCTS as STATIC_PRODUCTS, CATEGORIES, CATEGORY_HIERARCHY, MAIN_CATEGORY_MAP } from '../data/products';
 import { apiFetch } from '../utils/api';
 
 const SORT_OPTIONS = [
-  { label: 'Best Match',    value: 'best' },
+  { label: 'Best Match',        value: 'best' },
   { label: 'Price: Low → High', value: 'price_asc' },
   { label: 'Price: High → Low', value: 'price_desc' },
-  { label: 'Top Rated',    value: 'rating' },
+  { label: 'Top Rated',         value: 'rating' },
 ];
 
 const ProductList = () => {
@@ -19,11 +19,19 @@ const ProductList = () => {
   const [priceRange, setPriceRange]     = useState(500000);
   const [sortBy, setSortBy]             = useState('best');
   const [isMobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [activeSubCat, setActiveSubCat] = useState('');
 
-  const searchQuery     = searchParams.get('search')  || '';
-  const categoryQuery   = searchParams.get('category') || '';
+  const searchQuery   = searchParams.get('search')   || '';
+  const categoryQuery = searchParams.get('category') || '';
 
-  const [products, setProducts] = useState(STATIC_PRODUCTS);
+  // Derived: is this a top-level grouped category or a leaf?
+  const isMainCategory = Boolean(MAIN_CATEGORY_MAP[categoryQuery]);
+  const subCategories  = isMainCategory ? MAIN_CATEGORY_MAP[categoryQuery] : [];
+
+  // Reset drill-down chip when main category changes
+  useEffect(() => { setActiveSubCat(''); }, [categoryQuery]);
+
+  const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error,     setError]     = useState(null);
 
@@ -31,23 +39,43 @@ const ProductList = () => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        let url = '/api/products?';
-        if (searchQuery)      url += `keyword=${encodeURIComponent(searchQuery)}&`;
-        if (categoryQuery)    url += `category=${encodeURIComponent(categoryQuery)}&`;
 
+        // Resolve which sub-categories to fetch INSIDE the effect
+        // so we always use the current render's values (no stale closure)
+        const mainCats = MAIN_CATEGORY_MAP[categoryQuery] || [];
+        const isMain   = mainCats.length > 0;
+
+        const params = new URLSearchParams();
+        if (searchQuery) params.set('keyword', searchQuery);
+
+        if (activeSubCat) {
+          // Drilled into a specific chip → single category
+          params.set('category', activeSubCat);
+        } else if (isMain) {
+          // Main category → pass each sub-category as a separate cat[] param
+          // e.g. cat[]=Fashion Collection&cat[]=Watches&cat[]=Health & beauty
+          // Express/qs parses repeated params as an array, no encoding issues
+          mainCats.forEach((c) => params.append('cat[]', c));
+        } else if (categoryQuery) {
+          // Direct leaf/sub-category link
+          params.set('category', categoryQuery);
+        }
+
+        const url = `/api/products?${params.toString()}`;
         const response = await apiFetch(url);
         if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
-        setProducts(data);
+        setProducts(Array.isArray(data) ? data : []);
         setError(null);
       } catch (err) {
         setError(err.message);
+        setProducts(STATIC_PRODUCTS);
       } finally {
         setIsLoading(false);
       }
     };
     fetchProducts();
-  }, [searchQuery, categoryQuery]);
+  }, [searchQuery, categoryQuery, activeSubCat]);
 
   const handleCategoryToggle = (name) => {
     const p = new URLSearchParams(searchParams);
@@ -246,6 +274,54 @@ const ProductList = () => {
                 )}
               </div>
             )}
+
+            {/* ── Sub-category chip strip (shown only for main categories) ── */}
+            <AnimatePresence>
+              {isMainCategory && subCategories.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="mb-5"
+                >
+                  <div className="bg-white dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark shadow-card px-4 py-3">
+                    <div className="flex items-center gap-2 mb-2.5">
+                      <Tag className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                        Browse by Sub-Category
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {/* "All" chip — shows all sub-categories */}
+                      <button
+                        onClick={() => setActiveSubCat('')}
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                          activeSubCat === ''
+                            ? 'bg-primary text-white border-primary shadow-md shadow-primary/25'
+                            : 'bg-surface-muted dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-border dark:border-border-dark hover:border-primary hover:text-primary'
+                        }`}
+                      >
+                        All {categoryQuery}
+                      </button>
+                      {subCategories.map((sub) => (
+                        <button
+                          key={sub}
+                          onClick={() => setActiveSubCat(activeSubCat === sub ? '' : sub)}
+                          className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                            activeSubCat === sub
+                              ? 'bg-primary text-white border-primary shadow-md shadow-primary/25'
+                              : 'bg-surface-muted dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-border dark:border-border-dark hover:border-primary hover:text-primary'
+                          }`}
+                        >
+                          {sub}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Product grid */}
             {isLoading ? (

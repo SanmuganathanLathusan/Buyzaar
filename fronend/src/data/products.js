@@ -1,3 +1,34 @@
+/**
+ * Maps each main/parent category to all of its sub-categories.
+ * IMPORTANT: sub-categories listed here MUST match exactly what is
+ * stored in MongoDB (case-insensitive match is handled by the backend).
+ * These are the categories seeded via seedVendorProducts.js.
+ */
+export const MAIN_CATEGORY_MAP = {
+  'Fashion': [
+    'Fashion Collection',
+    'Health & beauty',
+  ],
+  'Electronics': [
+    'Electronics Item',
+    'Gadgets',
+  ],
+  'Home & Living': [
+    'Home Appliance',
+    'Kitchen Item',
+    'Furniture',
+  ],
+  'Food & Grocery': [
+    'Food',
+  ],
+  'Toys & Games': [
+    'Toys and Games',
+  ],
+};
+
+/**
+ * Flat list of every leaf (sub) category that exists in the DB.
+ */
 export const CATEGORY_HIERARCHY = {
   'Fashion Collection': ['Fashion Collection'],
   'Electronics Item': ['Electronics Item'],
@@ -10,6 +41,9 @@ export const CATEGORY_HIERARCHY = {
   'Health & beauty': ['Health & beauty']
 };
 
+/**
+ * Sidebar filter categories (sub/leaf categories shown in the filter panel).
+ */
 export const CATEGORIES = [
   { id: 1, name: 'Fashion Collection' },
   { id: 2, name: 'Electronics Item' },
@@ -76,5 +110,61 @@ export const PRODUCTS = [
   { id: 44, category: 'Toys and Games', title: 'Building Blocks Set 500pcs', price: 3200, originalPrice: 4000, discount: 20, rating: 4.8, reviews: 150, image: 'https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?w=500&q=80' },
   // Health & beauty
   { id: 45, category: 'Health & beauty', title: 'Skin Rejuvenating Serum', price: 4500, originalPrice: 5500, discount: 18, rating: 4.6, reviews: 110, image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&q=80' },
-  { id: 46, category: 'Health & beauty', title: 'Lavender Essential Oil', price: 1500, originalPrice: 2000, discount: 25, rating: 4.9, reviews: 200, image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&q=80' }
+  { id: 46, category: 'Health & beauty', title: 'Lavender Essential Oil', price: 1500, originalPrice: 2000, discount: 25, rating: 4.9, reviews: 200, image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&q=80' },
+  {
+    id: 47,
+    _id: "69bf6a0f7510d13f10c0155a",
+    title: "Wireless Blue Earbuds",
+    description: "High-fidelity wireless earbuds featuring active noise cancellation, deep bass, water resistance, and up to 30 hours of total playtime with the smart charging case.",
+    price: 3500,
+    originalPrice: 5000,
+    discount: 30,
+    category: "Gadgets",
+    image: "/images/promo_earbuds_1777814089396.png",
+    rating: 4.8,
+    reviews: 150,
+    stock: 50
+  },
+  {
+    id: 48,
+    _id: "69bf6a0f7510d13f10c0155b",
+    title: "Sweet Valentine Chocolate Box",
+    description: "An assortment of premium imported chocolates, milk truffles, and dark chocolate delights in a beautifully decorated gift box.",
+    price: 1400,
+    originalPrice: 2000,
+    discount: 30,
+    category: "Food",
+    image: "/images/promo_chocolates_1777814134245.png",
+    rating: 4.9,
+    reviews: 85,
+    stock: 30
+  },
+  {
+    id: 49,
+    _id: "69bf6a0f7510d13f10c0155c",
+    title: "Elegant Diamond Engagement Ring",
+    description: "A stunning 18k yellow gold band featuring a brilliant-cut solitaire diamond centerpiece, crafted for everlasting elegance.",
+    price: 35000,
+    originalPrice: 50000,
+    discount: 30,
+    category: "Fashion Collection",
+    image: "/images/promo_ring_1777814170273.png",
+    rating: 4.9,
+    reviews: 45,
+    stock: 10
+  },
+  {
+    id: 50,
+    _id: "69bf6a0f7510d13f10c0155d",
+    title: "Premium Wooden Relax Chair",
+    description: "Ergonomically designed lounge chair handcrafted from solid walnut wood with premium soft fabric cushions for ultimate relaxation.",
+    price: 17500,
+    originalPrice: 25000,
+    discount: 30,
+    category: "Furniture",
+    image: "/images/promo_chair_1777814269040.png",
+    rating: 4.7,
+    reviews: 120,
+    stock: 25
+  }
 ];

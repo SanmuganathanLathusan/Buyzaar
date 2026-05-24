@@ -356,6 +356,58 @@ const products = [
     reviews: 374,
     stock: 250,
   },
+  {
+    _id: new mongoose.Types.ObjectId("69bf6a0f7510d13f10c0155a"),
+    title: "Wireless Blue Earbuds",
+    description: "High-fidelity wireless earbuds featuring active noise cancellation, deep bass, water resistance, and up to 30 hours of total playtime with the smart charging case.",
+    price: 3500,
+    originalPrice: 5000,
+    discount: 30,
+    category: "Gadgets",
+    image: "/images/promo_earbuds_1777814089396.png",
+    rating: 4.8,
+    reviews: 150,
+    stock: 50
+  },
+  {
+    _id: new mongoose.Types.ObjectId("69bf6a0f7510d13f10c0155b"),
+    title: "Sweet Valentine Chocolate Box",
+    description: "An assortment of premium imported chocolates, milk truffles, and dark chocolate delights in a beautifully decorated gift box.",
+    price: 1400,
+    originalPrice: 2000,
+    discount: 30,
+    category: "Food",
+    image: "/images/promo_chocolates_1777814134245.png",
+    rating: 4.9,
+    reviews: 85,
+    stock: 30
+  },
+  {
+    _id: new mongoose.Types.ObjectId("69bf6a0f7510d13f10c0155c"),
+    title: "Elegant Diamond Engagement Ring",
+    description: "A stunning 18k yellow gold band featuring a brilliant-cut solitaire diamond centerpiece, crafted for everlasting elegance.",
+    price: 35000,
+    originalPrice: 50000,
+    discount: 30,
+    category: "Fashion Collection",
+    image: "/images/promo_ring_1777814170273.png",
+    rating: 4.9,
+    reviews: 45,
+    stock: 10
+  },
+  {
+    _id: new mongoose.Types.ObjectId("69bf6a0f7510d13f10c0155d"),
+    title: "Premium Wooden Relax Chair",
+    description: "Ergonomically designed lounge chair handcrafted from solid walnut wood with premium soft fabric cushions for ultimate relaxation.",
+    price: 17500,
+    originalPrice: 25000,
+    discount: 30,
+    category: "Furniture",
+    image: "/images/promo_chair_1777814269040.png",
+    rating: 4.7,
+    reviews: 120,
+    stock: 25
+  }
 ];
 
 // ─── Main seeder function ─────────────────────────────────────────────────────
