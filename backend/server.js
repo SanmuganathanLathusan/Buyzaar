@@ -132,7 +132,7 @@ if (process.env.NODE_ENV !== 'production') {
     console.error('Failed to start server:', err);
     process.exit(1);
   });
-} else {
-  // Vercel serverless export
-  module.exports = app;
 }
+
+// Always export the app (needed for both local and Vercel)
+module.exports = app;
