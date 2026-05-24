@@ -24,7 +24,6 @@ const AdminDashboard = () => {
       navigate('/login');
       return;
     }
-    
     fetchAdminData();
   }, [token, user, navigate]);
 
@@ -52,62 +51,72 @@ const AdminDashboard = () => {
   };
 
   const formattedStats = [
-    { title: 'Total Revenue (Platform)', value: `Rs. ${dashboardData.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-500/10' },
-    { title: 'Registered Vendors', value: dashboardData.totalVendors.toLocaleString(), icon: Store, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-500/10' },
-    { title: 'Active Customers', value: dashboardData.totalCustomers.toLocaleString(), icon: Users, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-500/10' },
-    { title: 'Platform Traffic (Orders)', value: dashboardData.totalOrders.toLocaleString(), icon: Activity, color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-500/10' },
+    { title: 'Total Revenue (Platform)', value: `Rs. ${dashboardData.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900/20' },
+    { title: 'Registered Vendors', value: dashboardData.totalVendors.toLocaleString(), icon: Store, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-900/20' },
+    { title: 'Active Customers', value: dashboardData.totalCustomers.toLocaleString(), icon: Users, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-950/30 border-purple-100 dark:border-purple-900/20' },
+    { title: 'Platform Traffic (Orders)', value: dashboardData.totalOrders.toLocaleString(), icon: Activity, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-950/30 border-amber-100 dark:border-amber-900/20' },
   ];
 
   const getStatusColor = (status) => {
-    switch(status) {
-      case 'Active': return 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400';
-      case 'Suspended': return 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400';
-      case 'Pending Review': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400';
-      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
+    switch (status) {
+      case 'Active':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/30';
+      case 'Suspended':
+        return 'bg-red-50 text-red-700 border-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/30';
+      case 'Pending Review':
+        return 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30';
+      default:
+        return 'bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700';
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background-dark text-primary">
-        <div className="animate-spin h-10 w-10 border-t-2 border-b-2 border-current rounded-full" />
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-primary/20 rounded-full animate-pulse" />
+          <div className="absolute inset-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+        <p className="text-sm text-slate-400 font-medium animate-pulse">Loading admin control panel…</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-background-dark flex flex-col md:flex-row pb-12 md:pb-0">
-      
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-gray-900 text-white md:h-screen md:sticky top-16 md:top-20 hidden md:flex flex-col">
-        <div className="p-6 border-b border-gray-800">
-          <h2 className="text-xl font-bold flex items-center gap-2">
+    <div className="min-h-screen bg-background dark:bg-background-dark flex flex-col md:flex-row pb-12 md:pb-0">
+      {/* Sidebar Navigation */}
+      <aside className="w-full md:w-64 bg-slate-950 text-slate-400 md:h-screen md:sticky md:top-16 flex flex-col">
+        <div className="p-6 border-b border-slate-900">
+          <h2 className="text-lg font-black text-white flex items-center gap-2">
             <ShieldCheck className="text-primary" /> Admin Control
           </h2>
-          <p className="text-xs text-gray-400 mt-1">Platform Operations</p>
+          <p className="text-xs text-slate-500 mt-0.5">Platform Operations</p>
         </div>
-        
-        <nav className="flex-1 px-4 py-6 space-y-2">
-          <button className="w-full flex items-center justify-start gap-3 px-4 py-3 bg-gray-800 text-white rounded-md font-medium">
-            <Activity size={20} /> Overview
+
+        <nav className="flex-1 px-4 py-6 space-y-1.5">
+          <button className="w-full flex items-center justify-start gap-3 px-4 py-3 bg-slate-900 text-white rounded-xl font-bold">
+            <Activity size={18} /> Overview
           </button>
-          <button className="w-full flex items-center justify-start gap-3 px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-md transition-colors">
-            <Store size={20} /> Vendors
+          <button className="w-full flex items-center justify-start gap-3 px-4 py-3 hover:bg-slate-900 hover:text-white rounded-xl font-semibold transition-colors">
+            <Store size={18} /> Vendors
           </button>
-          <button className="w-full flex items-center justify-start gap-3 px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-md transition-colors">
-            <Users size={20} /> Customers
+          <button className="w-full flex items-center justify-start gap-3 px-4 py-3 hover:bg-slate-900 hover:text-white rounded-xl font-semibold transition-colors">
+            <Users size={18} /> Customers
           </button>
-          <button className="w-full flex items-center justify-start gap-3 px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-md transition-colors">
-            <DollarSign size={20} /> Payouts
+          <button className="w-full flex items-center justify-start gap-3 px-4 py-3 hover:bg-slate-900 hover:text-white rounded-xl font-semibold transition-colors">
+            <DollarSign size={18} /> Payouts
           </button>
-          <button className="w-full flex items-center justify-start gap-3 px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-md transition-colors">
-            <Settings size={20} /> Platform Settings
+          <button className="w-full flex items-center justify-start gap-3 px-4 py-3 hover:bg-slate-900 hover:text-white rounded-xl font-semibold transition-colors">
+            <Settings size={18} /> Platform Settings
           </button>
         </nav>
-        
-        <div className="p-4 border-t border-gray-800">
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-md transition-colors font-medium">
-            <LogOut size={20} /> Logout
+
+        <div className="p-4 border-t border-slate-900">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-colors font-bold"
+          >
+            <LogOut size={18} /> Logout
           </button>
         </div>
       </aside>
@@ -116,33 +125,33 @@ const AdminDashboard = () => {
       <main className="flex-1 p-4 md:p-8">
         <header className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Overview</h1>
-            <p className="text-sm text-gray-500">Global metrics and platform health.</p>
+            <h1 className="text-2xl font-black text-secondary dark:text-white tracking-tight">Admin Overview</h1>
+            <p className="text-sm text-slate-500">Global metrics and platform health.</p>
           </div>
-          <div className="flex gap-3">
-            <button className="bg-white dark:bg-cardDark border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2">
-              <Mail size={16} /> Send Broadcast
-            </button>
-          </div>
+          <button className="btn-secondary btn-md rounded-xl gap-2 font-bold bg-white dark:bg-slate-800 border border-border dark:border-border-dark shadow-card">
+            <Mail size={16} /> Send Broadcast
+          </button>
         </header>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {formattedStats.map((stat, i) => (
-            <motion.div 
-              key={i} 
-              initial={{ opacity: 0, y: 20 }}
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-white dark:bg-cardDark p-6 rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm"
+              transition={{ delay: i * 0.06 }}
+              className="bg-white dark:bg-surface-dark p-5 rounded-2xl border border-border dark:border-border-dark shadow-card"
             >
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">{stat.title}</p>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white truncate max-w-[150px]">{stat.value}</h3>
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{stat.title}</p>
+                  <h3 className="text-xl font-black text-secondary dark:text-white tracking-tight truncate max-w-[150px]">
+                    {stat.value}
+                  </h3>
                 </div>
-                <div className={`p-3 rounded-full flex-shrink-0 ${stat.bg}`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center border flex-shrink-0 ${stat.bg}`}>
+                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
                 </div>
               </div>
             </motion.div>
@@ -150,44 +159,46 @@ const AdminDashboard = () => {
         </div>
 
         {/* Vendor Management */}
-        <div className="bg-white dark:bg-cardDark rounded-lg border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden mb-8">
-          <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Vendor Registrations</h3>
-            <button className="text-primary text-sm font-medium hover:underline">Manage All Vendors</button>
+        <div className="bg-white dark:bg-surface-dark rounded-3xl border border-border dark:border-border-dark shadow-card overflow-hidden">
+          <div className="p-6 border-b border-border dark:border-border-dark flex justify-between items-center">
+            <h3 className="text-lg font-bold text-secondary dark:text-white">Recent Vendor Registrations</h3>
+            <button className="text-primary text-sm font-semibold hover:text-primary-hover transition-colors">
+              Manage All Vendors
+            </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-white dark:bg-cardDark text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
-                  <th className="px-6 py-4 font-medium">Vendor / Shop Name</th>
-                  <th className="px-6 py-4 font-medium">Plan</th>
-                  <th className="px-6 py-4 font-medium">Joined</th>
-                  <th className="px-6 py-4 font-medium">Gross Revenue</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium text-right">Action</th>
+                <tr className="bg-surface-muted dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest border-b border-border dark:border-border-dark">
+                  <th className="px-6 py-4">Vendor / Shop Name</th>
+                  <th className="px-6 py-4">Plan</th>
+                  <th className="px-6 py-4">Joined</th>
+                  <th className="px-6 py-4">Gross Revenue</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+              <tbody className="divide-y divide-border dark:divide-border-dark">
                 {dashboardData.recentVendors.length === 0 ? (
-                   <tr>
-                     <td colSpan="6" className="px-6 py-6 text-center text-sm text-gray-500">
-                       No vendors registered yet.
-                     </td>
-                   </tr>
+                  <tr>
+                    <td colSpan="6" className="px-6 py-8 text-center text-sm text-slate-400">
+                      No vendors registered yet.
+                    </td>
+                  </tr>
                 ) : (
                   dashboardData.recentVendors.map((vendor, i) => (
-                    <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white">{vendor.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{vendor.plan}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{vendor.joinDate}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{vendor.revenue}</td>
+                    <tr key={i} className="hover:bg-surface-muted/50 dark:hover:bg-slate-900/30 transition-colors">
+                      <td className="px-6 py-4 text-sm font-bold text-secondary dark:text-white">{vendor.name}</td>
+                      <td className="px-6 py-4 text-sm font-semibold text-slate-600 dark:text-slate-300">{vendor.plan}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-slate-500">{vendor.joinDate}</td>
+                      <td className="px-6 py-4 text-sm font-bold text-secondary dark:text-white">{vendor.revenue}</td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(vendor.status)}`}>
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(vendor.status)}`}>
                           {vendor.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="text-sm text-blue-500 hover:text-blue-700 font-medium">Review</button>
+                        <button className="text-sm text-primary hover:text-primary-hover font-semibold">Review</button>
                       </td>
                     </tr>
                   ))
@@ -196,7 +207,6 @@ const AdminDashboard = () => {
             </table>
           </div>
         </div>
-
       </main>
     </div>
   );

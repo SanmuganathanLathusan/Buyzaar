@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Home from './pages/Home';
 import ProductList from './pages/ProductList';
 import ProductDetails from './pages/ProductDetails';
@@ -16,33 +16,74 @@ import { Toaster } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 
+/* Pages that should NOT show the footer */
+const NO_FOOTER_PATHS = ['/vendor-dashboard', '/admin-dashboard', '/user-dashboard'];
+
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
         <BrowserRouter>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-        <main className="flex-grow pt-4">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<ProductList />} />
-            <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Auth />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="/vendor-dashboard" element={<VendorDashboard />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/user-dashboard" element={<UserDashboard />} />
-          </Routes>
-        </main>
-        <Toaster position="bottom-right" />
-      </div>
+          <AppInner />
         </BrowserRouter>
       </CartProvider>
     </AuthProvider>
+  );
+}
+
+/* Inner component has access to router context */
+import { useLocation } from 'react-router-dom';
+
+function AppInner() {
+  const { pathname } = useLocation();
+  const showFooter   = !NO_FOOTER_PATHS.some((p) => pathname.startsWith(p));
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/"                         element={<Home />}           />
+          <Route path="/products"                 element={<ProductList />}    />
+          <Route path="/product/:id"              element={<ProductDetails />} />
+          <Route path="/cart"                     element={<Cart />}           />
+          <Route path="/checkout"                 element={<Checkout />}       />
+          <Route path="/contact"                  element={<Contact />}        />
+          <Route path="/login"                    element={<Auth />}           />
+          <Route path="/reset-password/:token"    element={<ResetPassword />}  />
+          <Route path="/vendor-dashboard"         element={<VendorDashboard />}/>
+          <Route path="/admin-dashboard"          element={<AdminDashboard />} />
+          <Route path="/user-dashboard"           element={<UserDashboard />}  />
+        </Routes>
+      </main>
+
+      {showFooter && <Footer />}
+
+      <Toaster
+        position="bottom-right"
+        gutter={12}
+        toastOptions={{
+          duration: 3500,
+          style: {
+            background: '#1e293b',
+            color: '#f8fafc',
+            fontSize: '13px',
+            fontWeight: '500',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.25), 0 4px 8px -4px rgba(0,0,0,0.15)',
+          },
+          success: {
+            iconTheme: { primary: '#10b981', secondary: '#f8fafc' },
+          },
+          error: {
+            iconTheme: { primary: '#ef4444', secondary: '#f8fafc' },
+          },
+        }}
+      />
+    </div>
   );
 }
 
