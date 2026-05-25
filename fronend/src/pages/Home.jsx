@@ -6,6 +6,12 @@ import ProductCard from '../components/ProductCard';
 import { ProductCardSkeleton } from '../components/Skeleton';
 import { PRODUCTS } from '../data/products';
 
+import earbudsImg from '../assets/promo_earbuds_1777814089396.png';
+import chocolatesImg from '../assets/promo_chocolates_1777814134245.png';
+import ringImg from '../assets/promo_ring_1777814170273.png';
+import chairImg from '../assets/promo_chair_1777814269040.png';
+import heroBannerImg from '../assets/hero_banner_woman_1777814059468.png';
+
 const SIDEBAR_CATEGORIES = [
   { name: 'Fashion Collection', emoji: '👗' },
   { name: 'Electronics Item',   emoji: '💻' },
@@ -33,7 +39,7 @@ const PROMO_CARDS = [
     color: 'from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/40',
     accent: 'text-blue-600 dark:text-blue-400',
     tag: 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300',
-    img: '/images/promo_earbuds_1777814089396.png',
+    img: earbudsImg,
     link: '/product/69bf6a0f7510d13f10c0155a',
   },
   {
@@ -43,7 +49,7 @@ const PROMO_CARDS = [
     color: 'from-orange-50 to-yellow-50 dark:from-orange-950/40 dark:to-yellow-950/40',
     accent: 'text-orange-600 dark:text-orange-400',
     tag: 'bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300',
-    img: '/images/promo_chocolates_1777814134245.png',
+    img: chocolatesImg,
     link: '/product/69bf6a0f7510d13f10c0155b',
   },
   {
@@ -53,7 +59,7 @@ const PROMO_CARDS = [
     color: 'from-pink-50 to-rose-50 dark:from-pink-950/40 dark:to-rose-950/40',
     accent: 'text-pink-600 dark:text-pink-400',
     tag: 'bg-pink-100 dark:bg-pink-900 text-pink-600 dark:text-pink-300',
-    img: '/images/promo_ring_1777814170273.png',
+    img: ringImg,
     link: '/product/69bf6a0f7510d13f10c0155c',
   },
   {
@@ -63,7 +69,7 @@ const PROMO_CARDS = [
     color: 'from-purple-50 to-indigo-50 dark:from-purple-950/40 dark:to-indigo-950/40',
     accent: 'text-purple-600 dark:text-purple-400',
     tag: 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300',
-    img: '/images/promo_chair_1777814269040.png',
+    img: chairImg,
     link: '/product/69bf6a0f7510d13f10c0155d',
   },
 ];
@@ -177,7 +183,7 @@ const Home = () => {
             {/* Hero image */}
             <div className="absolute right-0 bottom-0 h-full w-1/2 flex justify-end">
               <img
-                src="/images/hero_banner_woman_1777814059468.png"
+                src={heroBannerImg}
                 alt="Trendy Fashion Collection"
                 className="h-full object-cover object-right"
               />

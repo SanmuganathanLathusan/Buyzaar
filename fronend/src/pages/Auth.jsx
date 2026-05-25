@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
 import { apiFetch } from '../utils/api';
+import authBanner from '../assets/auth_delivery_banner.png';
 
 /* ── Field wrapper with icon ── */
 const Field = ({ label, icon: Icon, hint, children }) => (
@@ -250,7 +251,7 @@ const Auth = () => {
           {/* Main Delivery Graphic */}
           <div className="absolute inset-0 z-0">
             <img 
-              src={userType === 'vendor' ? 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80' : '/images/auth_delivery_banner.png'} 
+              src={userType === 'vendor' ? 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80' : authBanner} 
               alt={userType === 'vendor' ? 'Store Front' : 'Fast Delivery Service'} 
               className="w-full h-full object-cover object-center"
             />

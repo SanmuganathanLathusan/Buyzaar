@@ -56,6 +56,11 @@ export const CATEGORIES = [
   { id: 9, name: 'Health & beauty' }
 ];
 
+import earbudsImg from '../assets/promo_earbuds_1777814089396.png';
+import chocolatesImg from '../assets/promo_chocolates_1777814134245.png';
+import ringImg from '../assets/promo_ring_1777814170273.png';
+import chairImg from '../assets/promo_chair_1777814269040.png';
+
 export const PRODUCTS = [
   { id: 1, category: 'Mobiles', title: 'Smartphone X Pro Max - 256GB', price: 120000, originalPrice: 150000, discount: 20, rating: 4.8, reviews: 1240, image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=80' },
   { id: 2, category: 'TVs', title: 'Ultra HD Smart TV 55 Inch', price: 85000, originalPrice: 100000, discount: 15, rating: 4.5, reviews: 850, image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&q=80' },
@@ -120,7 +125,7 @@ export const PRODUCTS = [
     originalPrice: 5000,
     discount: 30,
     category: "Gadgets",
-    image: "/images/promo_earbuds_1777814089396.png",
+    image: earbudsImg,
     rating: 4.8,
     reviews: 150,
     stock: 50
@@ -134,7 +139,7 @@ export const PRODUCTS = [
     originalPrice: 2000,
     discount: 30,
     category: "Food",
-    image: "/images/promo_chocolates_1777814134245.png",
+    image: chocolatesImg,
     rating: 4.9,
     reviews: 85,
     stock: 30
@@ -148,7 +153,7 @@ export const PRODUCTS = [
     originalPrice: 50000,
     discount: 30,
     category: "Fashion Collection",
-    image: "/images/promo_ring_1777814170273.png",
+    image: ringImg,
     rating: 4.9,
     reviews: 45,
     stock: 10
@@ -162,7 +167,7 @@ export const PRODUCTS = [
     originalPrice: 25000,
     discount: 30,
     category: "Furniture",
-    image: "/images/promo_chair_1777814269040.png",
+    image: chairImg,
     rating: 4.7,
     reviews: 120,
     stock: 25
