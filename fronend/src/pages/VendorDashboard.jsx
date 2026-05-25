@@ -196,6 +196,9 @@ const VendorDashboard = () => {
           <button onClick={() => setActiveTab('customers')} className={`flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl font-bold text-sm md:text-base text-left transition-colors ${activeTab === 'customers' ? 'bg-primary/8 text-primary' : 'text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800'}`}>
             <Users size={18} className="md:w-5 md:h-5" /> <span>Customers</span>
           </button>
+          <button onClick={() => setActiveTab('settings')} className={`flex-shrink-0 flex items-center gap-2 md:gap-3 px-3 py-2 md:px-4 md:py-3 rounded-xl font-bold text-sm md:text-base text-left transition-colors ${activeTab === 'settings' ? 'bg-primary/8 text-primary' : 'text-slate-600 dark:text-slate-300 hover:bg-surface-muted dark:hover:bg-slate-800'}`}>
+            <Settings size={18} className="md:w-5 md:h-5" /> <span>Settings</span>
+          </button>
 
           <button onClick={handleLogout} className="md:hidden flex-shrink-0 flex items-center gap-2 px-3 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors text-sm">
             <LogOut size={18} /> Logout
@@ -221,6 +224,7 @@ const VendorDashboard = () => {
               {activeTab === 'products' && 'My Products'}
               {activeTab === 'orders' && 'Manage Orders'}
               {activeTab === 'customers' && 'My Customers'}
+              {activeTab === 'settings' && 'Account Settings'}
             </h1>
             <p className="text-sm text-slate-500">Welcome back, {user?.name || 'Vendor'}</p>
           </div>
@@ -479,6 +483,69 @@ const VendorDashboard = () => {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className="max-w-2xl bg-white dark:bg-surface-dark rounded-3xl border border-border dark:border-border-dark shadow-card p-6 md:p-8">
+                <h3 className="text-xl font-bold text-secondary dark:text-white mb-6">Change Password</h3>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const password = e.target.password.value;
+                    const confirmPassword = e.target.confirmPassword.value;
+                    if (password !== confirmPassword) {
+                      return toast.error("Passwords do not match");
+                    }
+                    if (password.length < 6) {
+                      return toast.error("Password must be at least 6 characters");
+                    }
+                    try {
+                      const res = await fetchWithAuth('/api/auth/profile', {
+                        method: 'PUT',
+                        body: JSON.stringify({ password })
+                      });
+                      if (res.ok) {
+                        toast.success("Password updated successfully!");
+                        e.target.reset();
+                      } else {
+                        const err = await res.json();
+                        toast.error(err.message || "Failed to update password");
+                      }
+                    } catch (error) {
+                      toast.error("Failed to connect to server");
+                    }
+                  }}
+                  className="space-y-5"
+                >
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      New Password
+                    </label>
+                    <input
+                      name="password"
+                      type="password"
+                      required
+                      className={inputCls}
+                      placeholder="Enter new password"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Confirm New Password
+                    </label>
+                    <input
+                      name="confirmPassword"
+                      type="password"
+                      required
+                      className={inputCls}
+                      placeholder="Confirm new password"
+                    />
+                  </div>
+                  <button type="submit" className="btn-primary w-full py-3 rounded-xl font-bold">
+                    Update Password
+                  </button>
+                </form>
               </div>
             )}
           </>
