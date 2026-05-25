@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Filter, ChevronDown, Frown, SlidersHorizontal, X, Search, Tag } from 'lucide-react';
+import { Filter, ChevronDown, Frown, SlidersHorizontal, X, Search, Tag, LayoutGrid } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
@@ -14,12 +14,27 @@ const SORT_OPTIONS = [
   { label: 'Top Rated',         value: 'rating' },
 ];
 
+const CATEGORY_EMOJIS = {
+  'Fashion Collection': '👗',
+  'Electronics Item':   '💻',
+  'Home Appliance':     '🏠',
+  'Kitchen Item':       '🍳',
+  'Furniture':          '🛋️',
+  'Food':               '🍔',
+  'Gadgets':            '📱',
+  'Toys and Games':     '🎮',
+  'Health & beauty':    '💄',
+};
+
 const ProductList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [priceRange, setPriceRange]     = useState(500000);
   const [sortBy, setSortBy]             = useState('best');
   const [isMobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [activeSubCat, setActiveSubCat] = useState('');
+  const [activeSubCat, setActiveSubCat]           = useState('');
+
+  // ── NEW: active search-category tab ──
+  const [searchCatTab, setSearchCatTab] = useState('__all__');
 
   const searchQuery   = searchParams.get('search')   || '';
   const categoryQuery = searchParams.get('category') || '';
@@ -30,6 +45,9 @@ const ProductList = () => {
 
   // Reset drill-down chip when main category changes
   useEffect(() => { setActiveSubCat(''); }, [categoryQuery]);
+
+  // Reset search-category tab whenever search query changes
+  useEffect(() => { setSearchCatTab('__all__'); }, [searchQuery]);
 
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -84,16 +102,38 @@ const ProductList = () => {
     setSearchParams(p);
   };
 
+  // ── Search category tabs: derive unique categories from all search results ──
+  const searchCategoryTabs = useMemo(() => {
+    if (!searchQuery) return [];
+    const map = {};
+    products.forEach((p) => {
+      const cat = p.category || 'Other';
+      map[cat] = (map[cat] || 0) + 1;
+    });
+    return Object.entries(map)
+      .sort((a, b) => b[1] - a[1])   // most products first
+      .map(([name, count]) => ({ name, count }));
+  }, [products, searchQuery]);
+
+  // Auto-select first tab when tabs change (new search result arrives)
+  useEffect(() => {
+    if (searchCategoryTabs.length > 0 && searchCatTab === '__all__') {
+      // keep '__all__' as default — user can still see everything
+    }
+  }, [searchCategoryTabs]);
+
   const filteredProducts = useMemo(() => {
     let arr = products.filter((p) => {
       if (priceRange !== 500000 && p.price > priceRange) return false;
+      // If searching and a specific tab is chosen, filter by that category
+      if (searchQuery && searchCatTab !== '__all__' && p.category !== searchCatTab) return false;
       return true;
     });
     if (sortBy === 'price_asc')  arr = [...arr].sort((a, b) => a.price - b.price);
     if (sortBy === 'price_desc') arr = [...arr].sort((a, b) => b.price - a.price);
     if (sortBy === 'rating')     arr = [...arr].sort((a, b) => (b.rating || 0) - (a.rating || 0));
     return arr;
-  }, [products, priceRange, sortBy]);
+  }, [products, priceRange, sortBy, searchQuery, searchCatTab]);
 
   /* ── Sidebar content (shared between desktop & mobile) ── */
   const SidebarContent = () => (
@@ -214,7 +254,14 @@ const ProductList = () => {
                   <span>
                     <span className="font-bold text-secondary dark:text-white text-base">{filteredProducts.length}</span>
                     {' '}products found
-                    {searchQuery && <span className="ml-1">for "<em className="text-primary">{searchQuery}</em>"</span>}
+                    {searchQuery && searchCatTab !== '__all__' ? (
+                      <span className="ml-1">
+                        in <em className="text-primary font-semibold">{CATEGORY_EMOJIS[searchCatTab] || ''} {searchCatTab}</em>
+                        {' '}for "<em className="text-primary">{searchQuery}</em>"
+                      </span>
+                    ) : searchQuery ? (
+                      <span className="ml-1">for "<em className="text-primary">{searchQuery}</em>"</span>
+                    ) : null}
                   </span>
                 )}
               </div>
@@ -275,9 +322,86 @@ const ProductList = () => {
               </div>
             )}
 
-            {/* ── Sub-category chip strip (shown only for main categories) ── */}
+            {/* ══════════════════════════════════════
+                SEARCH CATEGORY TABS
+                Shown only when a search query is active
+            ══════════════════════════════════════ */}
             <AnimatePresence>
-              {isMainCategory && subCategories.length > 0 && (
+              {searchQuery && !isLoading && searchCategoryTabs.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="mb-5"
+                >
+                  <div className="bg-white dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark shadow-card overflow-hidden">
+                    {/* Header */}
+                    <div className="flex items-center gap-2 px-4 pt-3 pb-2 border-b border-border dark:border-border-dark">
+                      <LayoutGrid className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                        Results by Category
+                      </span>
+                      <span className="ml-auto text-[10px] font-semibold text-slate-400">
+                        {searchCategoryTabs.length} categor{searchCategoryTabs.length === 1 ? 'y' : 'ies'} matched
+                      </span>
+                    </div>
+
+                    {/* Tab pills */}
+                    <div className="flex flex-wrap gap-2 px-4 py-3">
+                      {/* "All" tab */}
+                      <button
+                        onClick={() => setSearchCatTab('__all__')}
+                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                          searchCatTab === '__all__'
+                            ? 'bg-primary text-white border-primary shadow-md shadow-primary/25'
+                            : 'bg-surface-muted dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-border dark:border-border-dark hover:border-primary hover:text-primary'
+                        }`}
+                      >
+                        All Results
+                        <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
+                          searchCatTab === '__all__'
+                            ? 'bg-white/25 text-white'
+                            : 'bg-primary/10 text-primary'
+                        }`}>
+                          {products.length}
+                        </span>
+                      </button>
+
+                      {/* Per-category tabs */}
+                      {searchCategoryTabs.map(({ name, count }, idx) => (
+                        <motion.button
+                          key={name}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: idx * 0.05, duration: 0.2 }}
+                          onClick={() => setSearchCatTab(name)}
+                          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                            searchCatTab === name
+                              ? 'bg-primary text-white border-primary shadow-md shadow-primary/25'
+                              : 'bg-surface-muted dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-border dark:border-border-dark hover:border-primary hover:text-primary'
+                          }`}
+                        >
+                          <span className="text-sm leading-none">{CATEGORY_EMOJIS[name] || '🏷️'}</span>
+                          {name}
+                          <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${
+                            searchCatTab === name
+                              ? 'bg-white/25 text-white'
+                              : 'bg-primary/10 text-primary'
+                          }`}>
+                            {count}
+                          </span>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* ── Sub-category chip strip (shown only for main categories, no search) ── */}
+            <AnimatePresence>
+              {!searchQuery && isMainCategory && subCategories.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -293,7 +417,6 @@ const ProductList = () => {
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {/* "All" chip — shows all sub-categories */}
                       <button
                         onClick={() => setActiveSubCat('')}
                         className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${

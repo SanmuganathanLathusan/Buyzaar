@@ -23,7 +23,7 @@ const getProducts = async (req, res) => {
           category: { $in: cats.map((c) => new RegExp(`^${c}$`, 'i')) },
         };
       }
-    // 2) Legacy comma-joined: ?categories=A,B,C
+      // 2) Legacy comma-joined: ?categories=A,B,C
     } else if (req.query.categories) {
       const cats = req.query.categories.split(',').map((c) => c.trim()).filter(Boolean);
       if (cats.length > 0) {
@@ -31,7 +31,7 @@ const getProducts = async (req, res) => {
           category: { $in: cats.map((c) => new RegExp(`^${c}$`, 'i')) },
         };
       }
-    // 3) Single category: ?category=Fashion Collection
+      // 3) Single category: ?category=Fashion Collection
     } else if (req.query.category) {
       categoryFilter = { category: { $regex: `^${req.query.category}$`, $options: 'i' } };
     }
@@ -110,4 +110,44 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-module.exports = { getProducts, getProductById, createProduct, getVendorProducts, deleteProduct };
+// @desc    Create new review
+// @route   POST /api/products/:id/reviews
+// @access  Private
+const createProductReview = async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    const product = await Product.findById(req.params.id);
+
+    if (product) {
+      const alreadyReviewed = product.reviews.find(
+        (r) => r.user.toString() === req.user._id.toString()
+      );
+
+      if (alreadyReviewed) {
+        return res.status(400).json({ message: 'Product already reviewed' });
+      }
+
+      const review = {
+        name: req.user.name,
+        rating: Number(rating),
+        comment,
+        user: req.user._id,
+      };
+
+      product.reviews.push(review);
+      product.numReviews = product.reviews.length;
+      product.rating =
+        product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+        product.reviews.length;
+
+      await product.save();
+      res.status(201).json({ message: 'Review added' });
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getProducts, getProductById, createProduct, getVendorProducts, deleteProduct, createProductReview };

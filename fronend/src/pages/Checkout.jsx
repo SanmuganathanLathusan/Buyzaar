@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   CreditCard, Banknote, Truck, ShieldCheck, Lock,
   CheckCircle, MapPin, Phone, User, Mail, Hash
@@ -61,12 +61,31 @@ const inputCls = (hasIcon) =>
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cartSubtotal, clearCart, cartItems } = useCart();
   const { token } = useAuth();
+  
+  // Direct buy logic
+  const isDirectBuy = location.state?.directBuy;
+  const directProduct = location.state?.product;
+  const directQuantity = location.state?.quantity || 1;
+  const checkoutItems = isDirectBuy && directProduct ? [{
+    product: directProduct._id,
+    title: directProduct.title,
+    image: directProduct.image,
+    price: directProduct.price,
+    qty: directQuantity,
+    vendor: directProduct.vendor?._id || directProduct.vendor
+  }] : cartItems;
+  const subtotalToUse = isDirectBuy && directProduct ? (directProduct.price * directQuantity) : cartSubtotal;
 
   useEffect(() => {
     if (!token) { toast.error('Please sign in to access checkout'); navigate('/login'); }
-  }, [token, navigate]);
+    if (checkoutItems.length === 0) {
+      toast('Your cart is empty.');
+      navigate('/products');
+    }
+  }, [token, navigate, checkoutItems.length]);
 
   const [step,          setStep]          = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('cod');
@@ -79,13 +98,13 @@ const Checkout = () => {
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const shipping = cartSubtotal > 0 ? (cartSubtotal >= 5000 ? 0 : 500) : 0;
-  const total    = cartSubtotal + shipping;
+  const shipping = subtotalToUse > 0 ? (subtotalToUse >= 5000 ? 0 : 500) : 0;
+  const total    = subtotalToUse + shipping;
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     if (!token) { toast.error('You must be logged in to place an order.'); navigate('/login'); return; }
-    if (cartItems.length === 0) { toast.error('Your cart is empty'); return; }
+    if (checkoutItems.length === 0) { toast.error('Your cart/order is empty'); return; }
     
     // Validate form fields
     if (!formData.fullName || !formData.address || !formData.city || !formData.phone) {
@@ -93,18 +112,21 @@ const Checkout = () => {
       return;
     }
 
-    const hasLegacyItems = cartItems.some((item) => !item._id || item._id.toString().length !== 24);
+    const hasLegacyItems = checkoutItems.some((item) => {
+      const idToCheck = isDirectBuy ? item.product : item._id;
+      return !idToCheck || idToCheck.toString().length !== 24;
+    });
     if (hasLegacyItems) {
-      toast.error('Your cart contains demo items that cannot be purchased. Please add real products!');
+      toast.error('Your order contains demo items that cannot be purchased. Please add real products!');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const orderItems = cartItems.map((item) => ({
-        product: item._id,
+      const orderItems = checkoutItems.map((item) => ({
+        product: isDirectBuy ? item.product : item._id,
         title:   item.name || item.title,
-        qty:     item.quantity,
+        qty:     isDirectBuy ? item.qty : item.quantity,
         price:   item.price,
         image:   item.image || (item.images && item.images[0]) || ''
       }));
@@ -119,7 +141,7 @@ const Checkout = () => {
           phone:      formData.phone
         },
         paymentMethod,
-        itemsPrice:   cartSubtotal,
+        itemsPrice:   subtotalToUse,
         shippingPrice: shipping,
         totalPrice:   total
       };
@@ -131,7 +153,9 @@ const Checkout = () => {
 
       if (response.ok) {
         toast.success('Order placed successfully! 🎉', { duration: 4000 });
-        clearCart();
+        if (!isDirectBuy) {
+          clearCart();
+        }
         setTimeout(() => navigate('/user-dashboard'), 1500);
       } else {
         const errData = await response.json();
@@ -355,17 +379,17 @@ const Checkout = () => {
 
                     {/* Items */}
                     <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {cartItems.map((item) => (
-                        <div key={item._id || item.id} className="flex items-center gap-3 py-2">
+                      {checkoutItems.map((item) => (
+                        <div key={item._id || item.product} className="flex items-center gap-3 py-2">
                           <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex-shrink-0 flex items-center justify-center overflow-hidden">
                             <img src={item.image} alt={item.title} className="w-full h-full object-contain p-1" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium text-secondary dark:text-white line-clamp-1">{item.title}</div>
-                            <div className="text-xs text-slate-400">×{item.quantity}</div>
+                            <div className="text-xs text-slate-400">×{isDirectBuy ? item.qty : item.quantity}</div>
                           </div>
                           <div className="text-sm font-bold text-primary flex-shrink-0">
-                            Rs. {(item.price * item.quantity).toLocaleString()}
+                            Rs. {(item.price * (isDirectBuy ? item.qty : item.quantity)).toLocaleString()}
                           </div>
                         </div>
                       ))}
@@ -404,16 +428,16 @@ const Checkout = () => {
                 <h2 className="text-lg font-bold text-secondary dark:text-white mb-4">Order Summary</h2>
 
                 <div className="space-y-2 max-h-48 overflow-y-auto no-scrollbar mb-4">
-                  {cartItems.map((item) => (
-                    <div key={item._id || item.id} className="flex items-center gap-3 py-1.5">
+                  {checkoutItems.map((item) => (
+                    <div key={item._id || item.product} className="flex items-center gap-3 py-1.5">
                       <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex-shrink-0 flex items-center justify-center overflow-hidden">
                         <img src={item.image} alt="" className="w-full h-full object-contain p-1" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium text-secondary dark:text-white line-clamp-1">{item.title}</div>
-                        <div className="text-xs text-slate-400">×{item.quantity}</div>
+                        <div className="text-xs text-slate-400">×{isDirectBuy ? item.qty : item.quantity}</div>
                       </div>
-                      <span className="text-xs font-bold text-primary">Rs. {(item.price * item.quantity).toLocaleString()}</span>
+                      <span className="text-xs font-bold text-primary">Rs. {(item.price * (isDirectBuy ? item.qty : item.quantity)).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -421,7 +445,7 @@ const Checkout = () => {
                 <div className="border-t border-border dark:border-border-dark pt-4 space-y-2.5 text-sm">
                   <div className="flex justify-between text-slate-600 dark:text-slate-400">
                     <span>Items Total</span>
-                    <span className="font-semibold text-secondary dark:text-white">Rs. {cartSubtotal.toLocaleString()}</span>
+                    <span className="font-semibold text-secondary dark:text-white">Rs. {subtotalToUse.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-slate-600 dark:text-slate-400">
                     <span>Delivery</span>

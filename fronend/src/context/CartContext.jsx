@@ -16,17 +16,30 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   const addToCart = (product, quantity = 1) => {
+    const isExisting = cartItems.some(
+      item => (item.id && product.id && item.id === product.id) || 
+              (item._id && product._id && item._id === product._id)
+    );
+
+    if (isExisting) {
+      toast.success(`Increased ${product.title || product.name} quantity!`);
+    } else {
+      toast.success(`${product.title || product.name} added to cart!`);
+    }
+
     setCartItems(prev => {
-      const existingProduct = prev.find(item => item.id === product.id || item._id === product._id);
+      const existingProduct = prev.find(
+        item => (item.id && product.id && item.id === product.id) || 
+                (item._id && product._id && item._id === product._id)
+      );
       if (existingProduct) {
-        toast.success(`Increased ${product.title} quantity!`);
         return prev.map(item => 
-          (item.id === product.id || item._id === product._id)
+          ((item.id && product.id && item.id === product.id) || 
+           (item._id && product._id && item._id === product._id))
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
-      toast.success(`${product.title} added to cart!`);
       return [...prev, { ...product, quantity }];
     });
   };
@@ -38,7 +51,7 @@ export const CartProvider = ({ children }) => {
 
   const updateQuantity = (productId, delta) => {
     setCartItems(prev => prev.map(item => {
-      if (item.id === productId || item._id === productId) {
+      if ((item.id && item.id === productId) || (item._id && item._id === productId)) {
         return { ...item, quantity: Math.max(1, item.quantity + delta) };
       }
       return item;

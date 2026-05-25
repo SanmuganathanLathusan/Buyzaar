@@ -17,6 +17,7 @@ const AdminDashboard = () => {
   const [vendors, setVendors] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [vendorRequests, setVendorRequests] = useState([]);
   
   const [dashboardData, setDashboardData] = useState({
     totalRevenue: 0,
@@ -132,12 +133,67 @@ const AdminDashboard = () => {
     }
   };
 
+  // Fetch Vendor Requests
+  const fetchVendorRequests = async () => {
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/api/admin/vendor-requests`);
+      if (res.ok) {
+        const data = await res.json();
+        setVendorRequests(data);
+      } else {
+        toast.error('Failed to fetch vendor access requests');
+      }
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+      toast.error('Could not load vendor requests');
+    }
+  };
+
+  // Approve Vendor Access Request
+  const handleApproveRequest = async (requestId) => {
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/api/admin/vendor-requests/${requestId}/approve`, {
+        method: 'PUT'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Request approved! Temporary password generated: ${data.temporaryPassword}`, { duration: 10000 });
+        fetchVendorRequests();
+      } else {
+        toast.error(data.message || 'Failed to approve request');
+      }
+    } catch (error) {
+      console.error('Error approving request:', error);
+      toast.error('Could not approve request');
+    }
+  };
+
+  // Reject Vendor Access Request
+  const handleRejectRequest = async (requestId) => {
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/api/admin/vendor-requests/${requestId}/reject`, {
+        method: 'PUT'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('Vendor request rejected');
+        fetchVendorRequests();
+      } else {
+        toast.error(data.message || 'Failed to reject request');
+      }
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+      toast.error('Could not reject request');
+    }
+  };
+
   // Handle Section Switch
   const handleSectionSwitch = (section) => {
     setActiveSection(section);
     if (section === 'vendors') fetchVendors();
     if (section === 'customers') fetchCustomers();
     if (section === 'orders') fetchOrders();
+    if (section === 'vendor-requests') fetchVendorRequests();
   };
 
   const handleLogout = () => {
@@ -198,6 +254,12 @@ const AdminDashboard = () => {
             className={`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl font-semibold transition-colors ${activeSection === 'vendors' ? 'bg-slate-900 text-white' : 'hover:bg-slate-900 hover:text-white'}`}
           >
             <Store size={18} /> Vendors
+          </button>
+          <button 
+            onClick={() => handleSectionSwitch('vendor-requests')}
+            className={`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl font-semibold transition-colors ${activeSection === 'vendor-requests' ? 'bg-slate-900 text-white' : 'hover:bg-slate-900 hover:text-white'}`}
+          >
+            <ShieldCheck size={18} /> Vendor Requests
           </button>
           <button 
             onClick={() => handleSectionSwitch('customers')}
@@ -459,6 +521,116 @@ const AdminDashboard = () => {
                           <td className="px-6 py-4 text-sm text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</td>
                           <td className="px-6 py-4 text-right">
                             <button className="text-sm text-primary hover:text-primary-hover font-semibold">Details</button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VENDOR ACCESS REQUESTS SECTION */}
+        {activeSection === 'vendor-requests' && (
+          <div>
+            <header className="mb-8">
+              <h1 className="text-2xl font-black text-secondary dark:text-white tracking-tight">Vendor Access Requests</h1>
+              <p className="text-sm text-slate-500">Review and approve vendor access requests. Approved vendors will automatically get an account with a temporary password generated.</p>
+            </header>
+
+            <div className="bg-white dark:bg-surface-dark rounded-3xl border border-border dark:border-border-dark shadow-card overflow-hidden">
+              <div className="p-6 border-b border-border dark:border-border-dark">
+                <h3 className="text-lg font-bold text-secondary dark:text-white">All Requests ({vendorRequests.length})</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-surface-muted dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest border-b border-border dark:border-border-dark">
+                      <th className="px-6 py-4">Request Info</th>
+                      <th className="px-6 py-4">Shop details</th>
+                      <th className="px-6 py-4">Reason</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4">Temp Password</th>
+                      <th className="px-6 py-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border dark:divide-border-dark">
+                    {vendorRequests.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-8 text-center text-sm text-slate-400">No requests found.</td>
+                      </tr>
+                    ) : (
+                      vendorRequests.map((req) => (
+                        <tr key={req._id} className="hover:bg-surface-muted/50 dark:hover:bg-slate-900/30 transition-colors align-top">
+                          <td className="px-6 py-4 space-y-1">
+                            <div className="text-sm font-bold text-secondary dark:text-white">{req.fullName}</div>
+                            <div className="text-xs text-slate-500">{req.email}</div>
+                            <div className="text-xs text-slate-500">{req.phone}</div>
+                            <div className="text-[10px] text-slate-400">{new Date(req.createdAt).toLocaleString()}</div>
+                          </td>
+                          <td className="px-6 py-4 space-y-1">
+                            <div className="text-sm font-semibold text-secondary dark:text-white">{req.shopName}</div>
+                            <div className="text-xs text-slate-500"><span className="font-bold">Type:</span> {req.businessType}</div>
+                            <div className="text-xs text-slate-500"><span className="font-bold">Addr:</span> {req.businessAddress}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-xs text-slate-600 dark:text-slate-300 max-w-xs whitespace-pre-wrap leading-relaxed">
+                              {req.reason}
+                            </p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold border ${
+                              req.status === 'approved' 
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/30'
+                                : req.status === 'rejected'
+                                ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/30'
+                                : 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30'
+                            }`}>
+                              {req.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            {req.temporaryPassword ? (
+                              <div className="flex items-center gap-2">
+                                <code className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs font-mono text-primary font-bold">
+                                  {req.temporaryPassword}
+                                </code>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(req.temporaryPassword);
+                                    toast.success('Copied temporary password!');
+                                  }}
+                                  className="text-xs text-slate-400 hover:text-primary"
+                                  title="Copy Password"
+                                >
+                                  📋
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            {req.status === 'pending' ? (
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={() => handleApproveRequest(req._id)}
+                                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold transition-colors"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => handleRejectRequest(req._id)}
+                                  className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-bold transition-colors"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400">Processed</span>
+                            )}
                           </td>
                         </tr>
                       ))

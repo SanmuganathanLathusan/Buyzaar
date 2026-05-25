@@ -9,29 +9,29 @@ import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { PRODUCTS } from '../data/products';
-import { apiFetch } from '../utils/api';
+import { apiFetch, fetchWithAuth } from '../utils/api';
 import { PageSpinner } from '../components/Skeleton';
 
 /* ── Star renderer ── */
 const StarRating = ({ rating = 0, size = 'md' }) => {
   const cls = size === 'sm' ? 'w-3 h-3' : 'w-4 h-4';
-  const full  = Math.floor(rating);
-  const half  = rating % 1 >= 0.5;
+  const full = Math.floor(rating);
+  const half = rating % 1 >= 0.5;
   const empty = 5 - full - (half ? 1 : 0);
   return (
     <div className="flex items-center gap-0.5">
-      {Array.from({ length: full  }).map((_, i) => <Star     key={`f${i}`} className={`${cls} fill-amber-400 text-amber-400`} />)}
+      {Array.from({ length: full }).map((_, i) => <Star key={`f${i}`} className={`${cls} fill-amber-400 text-amber-400`} />)}
       {half && <StarHalf className={`${cls} fill-amber-400 text-amber-400`} />}
-      {Array.from({ length: empty }).map((_, i) => <Star     key={`e${i}`} className={`${cls} fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700`} />)}
+      {Array.from({ length: empty }).map((_, i) => <Star key={`e${i}`} className={`${cls} fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700`} />)}
     </div>
   );
 };
 
 const GUARANTEES = [
-  { icon: Truck,       label: 'Free Delivery',   sub: 'On orders over Rs. 5,000' },
-  { icon: RotateCcw,   label: 'Easy Returns',    sub: '30-day hassle-free returns' },
-  { icon: ShieldCheck, label: 'Secure Payment',  sub: 'SSL encrypted checkout' },
-  { icon: Headphones,  label: '24/7 Support',    sub: 'Dedicated help center' },
+  { icon: Truck, label: 'Free Delivery', sub: 'On orders over Rs. 5,000' },
+  { icon: RotateCcw, label: 'Easy Returns', sub: '30-day hassle-free returns' },
+  { icon: ShieldCheck, label: 'Secure Payment', sub: 'SSL encrypted checkout' },
+  { icon: Headphones, label: '24/7 Support', sub: 'Dedicated help center' },
 ];
 
 const ProductDetails = () => {
@@ -39,13 +39,18 @@ const ProductDetails = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useAuth();
-  const [product, setProduct]           = useState(null);
-  const [isLoading, setIsLoading]       = useState(true);
-  const [error, setError]               = useState(null);
+  const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [quantity, setQuantity]         = useState(1);
-  const [activeTab, setActiveTab]       = useState('description');
-  const [wishlist, setWishlist]         = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState('description');
+  const [wishlist, setWishlist] = useState(false);
+  
+  // Review state
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -70,12 +75,54 @@ const ProductDetails = () => {
 
   const handleAddToCart = () => {
     if (!user) { toast.error('Please sign in to add items to cart'); navigate('/login'); return; }
-    if (product) { addToCart(product, quantity); toast.success(`${quantity}× added to cart`, { icon: '🛒' }); }
+    if (product) { addToCart(product, quantity); }
   };
 
   const handleBuyNow = () => {
     if (!user) { toast.error('Please sign in to buy'); navigate('/login'); return; }
-    if (product) { addToCart(product, quantity); navigate('/checkout'); }
+    if (product) { 
+      // Do not add to global CartContext, just proceed to checkout with this specific item
+      navigate('/checkout', { state: { directBuy: true, product, quantity } });
+    }
+  };
+
+  const submitReview = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      return toast.error('Please sign in to submit a review');
+    }
+    if (rating === 0 || !comment.trim()) {
+      return toast.error('Please provide a rating and a comment');
+    }
+
+    setReviewLoading(true);
+    try {
+      const response = await fetchWithAuth(`/api/products/${product._id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rating, comment })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Failed to submit review');
+      }
+
+      toast.success('Review submitted successfully');
+      setRating(0);
+      setComment('');
+      
+      // Reload product to show new review
+      const updatedProduct = await apiFetch(`/api/products/${id}`).then(res => res.json());
+      setProduct(updatedProduct);
+      
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setReviewLoading(false);
+    }
   };
 
   if (isLoading) return <PageSpinner />;
@@ -95,7 +142,7 @@ const ProductDetails = () => {
     );
   }
 
-  const brand  = product.vendor?.businessName || 'Buyzaar Vendor';
+  const brand = product.vendor?.businessName || 'Buyzaar Vendor';
   const images = [product.image];
   const savings = product.originalPrice ? product.originalPrice - product.price : 0;
 
@@ -150,11 +197,10 @@ const ProductDetails = () => {
 
                 <button
                   onClick={() => setWishlist(!wishlist)}
-                  className={`absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl border shadow-sm transition-all ${
-                    wishlist
+                  className={`absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl border shadow-sm transition-all ${wishlist
                       ? 'bg-red-50 border-red-200 text-red-500'
                       : 'bg-white dark:bg-slate-800 border-border dark:border-border-dark text-slate-400 hover:text-red-500'
-                  }`}
+                    }`}
                 >
                   <Heart className={`w-4 h-4 ${wishlist ? 'fill-red-500' : ''}`} />
                 </button>
@@ -167,11 +213,10 @@ const ProductDetails = () => {
                     <button
                       key={idx}
                       onClick={() => setSelectedImage(idx)}
-                      className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
-                        selectedImage === idx
+                      className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${selectedImage === idx
                           ? 'border-primary shadow-md shadow-primary/20'
                           : 'border-transparent hover:border-slate-300'
-                      }`}
+                        }`}
                     >
                       <img src={img} className="w-full h-full object-cover" alt="" />
                     </button>
@@ -199,8 +244,8 @@ const ProductDetails = () => {
               {/* Rating */}
               <div className="flex items-center gap-3 mb-4">
                 <StarRating rating={product.rating || 0} />
-                <span className="text-sm text-primary font-semibold hover:underline cursor-pointer">
-                  {product.reviews || 0} reviews
+                <span className="text-sm text-primary font-semibold hover:underline cursor-pointer" onClick={() => setActiveTab('reviews')}>
+                  {product.numReviews || product.reviews?.length || 0} reviews
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">|</span>
                 <span className="flex items-center gap-1 text-sm text-emerald-600 dark:text-emerald-400 font-medium">
@@ -285,7 +330,7 @@ const ProductDetails = () => {
                 </button>
                 <button
                   onClick={async () => {
-                    await navigator.clipboard?.writeText(window.location.href).catch(() => {});
+                    await navigator.clipboard?.writeText(window.location.href).catch(() => { });
                     toast.success('Link copied!');
                   }}
                   className="btn-ghost btn-icon rounded-2xl border border-border dark:border-border-dark h-12 w-12 flex-shrink-0"
@@ -320,13 +365,12 @@ const ProductDetails = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-6 py-4 text-sm font-semibold capitalize transition-colors ${
-                  activeTab === tab
+                className={`relative px-6 py-4 text-sm font-semibold capitalize transition-colors ${activeTab === tab
                     ? 'text-primary'
                     : 'text-slate-500 hover:text-secondary dark:hover:text-white'
-                }`}
+                  }`}
               >
-                {tab === 'reviews' ? `Reviews (${product.reviews || 0})` : 'Description'}
+                {tab === 'reviews' ? `Reviews (${product.numReviews || product.reviews?.length || 0})` : 'Description'}
                 {activeTab === tab && (
                   <motion.div
                     layoutId="tab-indicator"
@@ -350,10 +394,70 @@ const ProductDetails = () => {
                   {product.description || 'No description has been provided for this product. Contact the vendor for more information.'}
                 </p>
               ) : (
-                <div className="flex flex-col items-center py-6 text-center gap-3">
-                  <div className="text-5xl font-black text-secondary dark:text-white">{product.rating?.toFixed(1) || '0.0'}</div>
-                  <StarRating rating={product.rating || 0} />
-                  <p className="text-slate-500 text-sm">Based on {product.reviews || 0} reviews</p>
+                <div className="space-y-8">
+                  {/* Rating Summary */}
+                  <div className="flex flex-col items-center py-6 border-b border-border dark:border-border-dark text-center gap-3">
+                    <div className="text-5xl font-black text-secondary dark:text-white">{product.rating?.toFixed(1) || '0.0'}</div>
+                    <StarRating rating={product.rating || 0} />
+                    <p className="text-slate-500 text-sm">Based on {product.numReviews || product.reviews?.length || 0} reviews</p>
+                  </div>
+                  
+                  {/* Add Review Form */}
+                  <div className="bg-surface-muted dark:bg-slate-800/50 p-6 rounded-2xl">
+                    <h4 className="text-base font-bold text-secondary dark:text-white mb-4">Write a Review</h4>
+                    <form onSubmit={submitReview} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Rating</label>
+                        <select 
+                          value={rating} 
+                          onChange={(e) => setRating(Number(e.target.value))}
+                          className="w-full md:w-auto px-4 py-2.5 rounded-xl border border-border dark:border-border-dark bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                        >
+                          <option value="0">Select Rating</option>
+                          <option value="5">5 - Excellent</option>
+                          <option value="4">4 - Very Good</option>
+                          <option value="3">3 - Good</option>
+                          <option value="2">2 - Fair</option>
+                          <option value="1">1 - Poor</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Comment</label>
+                        <textarea 
+                          rows="3" 
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                          placeholder="What did you like or dislike?"
+                          className="w-full px-4 py-3 rounded-xl border border-border dark:border-border-dark bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none"
+                        ></textarea>
+                      </div>
+                      <button type="submit" disabled={reviewLoading} className="btn-primary py-2.5 px-6 rounded-xl font-bold text-sm">
+                        {reviewLoading ? 'Submitting...' : 'Submit Review'}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Review List */}
+                  <div className="space-y-6">
+                    {product.reviews && product.reviews.length > 0 ? (
+                      product.reviews.map((rev) => (
+                        <div key={rev._id} className="pb-6 border-b border-border dark:border-border-dark last:border-0 last:pb-0">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-bold text-secondary dark:text-white text-sm">{rev.name}</span>
+                            <span className="text-xs text-slate-400">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex mb-2">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} size={12} className={i < rev.rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 dark:fill-slate-700 text-slate-200 dark:text-slate-700"} />
+                            ))}
+                          </div>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">{rev.comment}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-slate-500 text-center py-4">No reviews yet. Be the first to review!</p>
+                    )}
+                  </div>
                 </div>
               )}
             </motion.div>

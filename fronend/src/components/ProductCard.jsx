@@ -34,7 +34,7 @@ const ProductCard = ({ product }) => {
       return;
     }
     addToCart(product, 1);
-    toast.success('Added to cart!', { icon: '🛒' });
+
   };
 
   const discountPct = product.discount > 0 ? product.discount : null;
@@ -108,7 +108,7 @@ const ProductCard = ({ product }) => {
         <div className="flex items-center gap-1.5">
           <StarRating rating={product.rating || 0} />
           <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-            ({product.reviews || 0})
+            ({product.numReviews || product.reviews?.length || 0})
           </span>
         </div>
 
