@@ -12,9 +12,12 @@ import VendorDashboard from './pages/VendorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import Contact from './pages/Contact';
+import Wishlist from './pages/Wishlist';
+import ScrollToTop from './components/ScrollToTop';
 import { Toaster } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { WishlistProvider } from './context/WishlistContext';
 
 /* Pages that should NOT show the main Navbar/Footer */
 const NO_LAYOUT_PATHS = ['/admin', '/vendor-dashboard'];
@@ -23,9 +26,11 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <BrowserRouter>
-          <AppInner />
-        </BrowserRouter>
+        <WishlistProvider>
+          <BrowserRouter>
+            <AppInner />
+          </BrowserRouter>
+        </WishlistProvider>
       </CartProvider>
     </AuthProvider>
   );
@@ -43,6 +48,7 @@ function AppInner() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       {!isIsolated && <Navbar />}
 
       <main className="flex-grow">
@@ -58,6 +64,7 @@ function AppInner() {
           <Route path="/vendor-dashboard"         element={<VendorDashboard />}/>
           <Route path="/admin"                    element={<AdminDashboard />} />
           <Route path="/user-dashboard"           element={<UserDashboard />}  />
+          <Route path="/wishlist"                 element={<Wishlist />}       />
         </Routes>
       </main>
 

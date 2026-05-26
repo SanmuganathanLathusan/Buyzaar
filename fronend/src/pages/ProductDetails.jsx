@@ -8,6 +8,7 @@ import {
 import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 import { PRODUCTS } from '../data/products';
 import { apiFetch, fetchWithAuth } from '../utils/api';
 import { PageSpinner } from '../components/Skeleton';
@@ -45,7 +46,7 @@ const ProductDetails = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
-  const [wishlist, setWishlist] = useState(false);
+  const { toggleWishlist, isInWishlist } = useWishlist();
   
   // Review state
   const [rating, setRating] = useState(0);
@@ -196,13 +197,13 @@ const ProductDetails = () => {
                 )}
 
                 <button
-                  onClick={() => setWishlist(!wishlist)}
-                  className={`absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl border shadow-sm transition-all ${wishlist
+                  onClick={() => toggleWishlist(product)}
+                  className={`absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl border shadow-sm transition-all ${isInWishlist(product._id || product.id)
                       ? 'bg-red-50 border-red-200 text-red-500'
                       : 'bg-white dark:bg-slate-800 border-border dark:border-border-dark text-slate-400 hover:text-red-500'
                     }`}
                 >
-                  <Heart className={`w-4 h-4 ${wishlist ? 'fill-red-500' : ''}`} />
+                  <Heart className={`w-4 h-4 ${isInWishlist(product._id || product.id) ? 'fill-red-500' : ''}`} />
                 </button>
               </div>
 

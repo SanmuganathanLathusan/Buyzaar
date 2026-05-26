@@ -7,6 +7,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 import Logo from './Logo';
 
 const NAV_LINKS = [
@@ -26,6 +27,7 @@ const Navbar = () => {
   const location  = useLocation();
   const { cartCount }   = useCart();
   const { user, logout } = useAuth();
+  const { wishlistCount } = useWishlist();
   const userRef = useRef(null);
 
   /* ── scroll shadow ── */
@@ -134,6 +136,19 @@ const Navbar = () => {
                 title="Wishlist"
               >
                 <Heart className="w-4.5 h-4.5" />
+                <AnimatePresence>
+                  {wishlistCount > 0 && (
+                    <motion.span
+                      key="wishlist-badge"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold shadow-md shadow-primary/40"
+                    >
+                      {wishlistCount > 9 ? '9+' : wishlistCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </Link>
 
               {/* Cart */}

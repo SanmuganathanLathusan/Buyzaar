@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Eye, Star, StarHalf } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
+import { ShoppingCart, Eye, Star, StarHalf, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 /* ── Render star rating ── */
@@ -23,6 +24,7 @@ const StarRating = ({ rating = 0 }) => {
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const { user }      = useAuth();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate      = useNavigate();
 
   const handleAddToCart = (e) => {
@@ -75,6 +77,19 @@ const ProductCard = ({ product }) => {
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary-hover hover:shadow-glow transition-all duration-200"
           >
             <ShoppingCart className="w-4 h-4" />
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product); }}
+            title={isInWishlist(product._id || product.id) ? "Remove from wishlist" : "Add to wishlist"}
+            className={`w-9 h-9 flex items-center justify-center rounded-xl border shadow-md transition-all duration-200 ${
+              isInWishlist(product._id || product.id)
+                ? 'bg-red-50 border-red-200 text-red-500 shadow-red-500/20'
+                : 'bg-white dark:bg-slate-800 border-border dark:border-border-dark text-slate-400 hover:text-red-500 hover:border-red-200'
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isInWishlist(product._id || product.id) ? 'fill-red-500' : ''}`} />
           </motion.button>
 
           <Link
