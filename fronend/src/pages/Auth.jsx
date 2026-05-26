@@ -152,7 +152,7 @@ const Auth = () => {
       if (isLogin) {
         login(data, data.token);
         toast.success('Welcome back! 👋');
-        navigate(data.role === 'vendor' ? '/vendor-dashboard' : data.role === 'admin' ? '/admin-dashboard' : '/user-dashboard');
+        navigate(data.role === 'vendor' ? '/vendor-dashboard' : data.role === 'admin' ? '/admin' : '/user-dashboard');
       } else {
         toast.success('Account created! Please sign in.');
         setIsLogin(true);
