@@ -16,8 +16,8 @@ import { Toaster } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 
-/* Pages that should NOT show the footer */
-const NO_FOOTER_PATHS = ['/vendor-dashboard', '/admin-dashboard', '/user-dashboard'];
+/* Pages that should NOT show the main Navbar/Footer */
+const NO_LAYOUT_PATHS = ['/admin', '/vendor-dashboard'];
 
 function App() {
   return (
@@ -36,11 +36,14 @@ import { useLocation } from 'react-router-dom';
 
 function AppInner() {
   const { pathname } = useLocation();
-  const showFooter   = !NO_FOOTER_PATHS.some((p) => pathname.startsWith(p));
+  const hideLayout = NO_LAYOUT_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
+  // Special case: vendor dashboard usually wants its own layout if complex, but let's stick to the request.
+  // The user only explicitly asked for Admin Dashboard to be isolated.
+  const isIsolated = pathname.startsWith('/admin');
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      {!isIsolated && <Navbar />}
 
       <main className="flex-grow">
         <Routes>
@@ -53,12 +56,12 @@ function AppInner() {
           <Route path="/login"                    element={<Auth />}           />
           <Route path="/reset-password/:token"    element={<ResetPassword />}  />
           <Route path="/vendor-dashboard"         element={<VendorDashboard />}/>
-          <Route path="/admin-dashboard"          element={<AdminDashboard />} />
+          <Route path="/admin"                    element={<AdminDashboard />} />
           <Route path="/user-dashboard"           element={<UserDashboard />}  />
         </Routes>
       </main>
 
-      {showFooter && <Footer />}
+      {!isIsolated && <Footer />}
 
       <Toaster
         position="bottom-right"

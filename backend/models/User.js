@@ -31,11 +31,25 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: String,
   resetPasswordExpire: Date,
   phone: String,
+  profilePhoto: {
+    type: String,
+    default: ''
+  },
   address: {
     street: String,
     city: String,
     country: String
-  }
+  },
+  paymentMethods: [
+    {
+      cardType: String,
+      last4: String,
+      expMonth: Number,
+      expYear: Number,
+      cardHolderName: String,
+      isDefault: { type: Boolean, default: false }
+    }
+  ]
 }, { timestamps: true });
 
 // Hash password before saving

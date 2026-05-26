@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, DollarSign, Store, Activity, Settings, LogOut, ShieldCheck, Mail, ToggleRight } from 'lucide-react';
+import { Users, DollarSign, Store, Activity, Settings, LogOut, ShieldCheck, Mail, ToggleRight, Home, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fetchWithAuth } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
@@ -19,12 +19,24 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [vendorRequests, setVendorRequests] = useState([]);
   
+  // Vendor View States
+  const [selectedVendorDetails, setSelectedVendorDetails] = useState(null);
+  const [isViewingVendor, setIsViewingVendor] = useState(false);
+  const [isVendorLoading, setIsVendorLoading] = useState(false);
+  
   const [dashboardData, setDashboardData] = useState({
     totalRevenue: 0,
     totalCustomers: 0,
     totalVendors: 0,
     totalOrders: 0,
     recentVendors: []
+  });
+
+  const [platformSettings, setPlatformSettings] = useState({
+    commissionRate: 10,
+    sendOrderNotifications: true,
+    sendVendorUpdates: true,
+    maintenanceMode: false
   });
 
   // Initial Auth Check & Dashboard Load
@@ -187,13 +199,69 @@ const AdminDashboard = () => {
     }
   };
 
+  // Fetch Settings
+  const fetchSettings = async () => {
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/api/admin/settings`);
+      if (res.ok) {
+        const data = await res.json();
+        setPlatformSettings(data);
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
+
+  // Update Settings
+  const handleUpdateSettings = async (e) => {
+    if (e) e.preventDefault();
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/api/admin/settings`, {
+        method: 'PUT',
+        body: JSON.stringify(platformSettings)
+      });
+
+      if (res.ok) {
+        toast.success('Platform settings updated successfully!');
+        fetchSettings();
+      } else {
+        toast.error('Failed to update settings');
+      }
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      toast.error('Could not connect to server');
+    }
+  };
+
+  // Fetch Vendor Details
+  const fetchVendorDetails = async (vendorId) => {
+    setIsVendorLoading(true);
+    try {
+      const res = await fetchWithAuth(`${API_BASE}/api/admin/vendors/${vendorId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedVendorDetails(data);
+        setIsViewingVendor(true);
+      } else {
+        toast.error('Failed to load vendor details');
+      }
+    } catch (error) {
+      console.error('Error fetching vendor details:', error);
+      toast.error('Could not connect to server');
+    } finally {
+      setIsVendorLoading(false);
+    }
+  };
+
   // Handle Section Switch
   const handleSectionSwitch = (section) => {
     setActiveSection(section);
+    setIsViewingVendor(false); // Reset vendor view on section switch
     if (section === 'vendors') fetchVendors();
     if (section === 'customers') fetchCustomers();
     if (section === 'orders') fetchOrders();
     if (section === 'vendor-requests') fetchVendorRequests();
+    if (section === 'settings') fetchSettings();
   };
 
   const handleLogout = () => {
@@ -234,12 +302,21 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-background dark:bg-background-dark flex flex-col md:flex-row pb-12 md:pb-0">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-slate-950 text-slate-400 md:h-screen md:sticky md:top-16 flex flex-col">
+      <aside className="w-full md:w-64 bg-slate-950 text-slate-400 md:h-screen md:sticky md:top-0 flex flex-col">
         <div className="p-6 border-b border-slate-900">
           <h2 className="text-lg font-black text-white flex items-center gap-2">
             <ShieldCheck className="text-primary" /> Admin Control
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">Platform Operations</p>
+        </div>
+
+        <div className="px-4 pt-4">
+          <button 
+            onClick={() => navigate('/')}
+            className="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-all border border-primary/20"
+          >
+            <Home size={18} /> Return to Shop
+          </button>
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-1.5">
@@ -374,16 +451,24 @@ const AdminDashboard = () => {
         )}
 
         {/* VENDORS SECTION */}
-        {activeSection === 'vendors' && (
+        {activeSection === 'vendors' && !isViewingVendor && (
           <div>
-            <header className="mb-8">
-              <h1 className="text-2xl font-black text-secondary dark:text-white tracking-tight">Vendor Management</h1>
-              <p className="text-sm text-slate-500">Manage all registered vendors on the platform.</p>
+            <header className="mb-8 flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-black text-secondary dark:text-white tracking-tight">Vendor Management</h1>
+                <p className="text-sm text-slate-500">Manage all registered vendors on the platform.</p>
+              </div>
+              <Activity className="text-primary/20 w-12 h-12" />
             </header>
 
             <div className="bg-white dark:bg-surface-dark rounded-3xl border border-border dark:border-border-dark shadow-card overflow-hidden">
-              <div className="p-6 border-b border-border dark:border-border-dark">
+              <div className="p-6 border-b border-border dark:border-border-dark flex justify-between items-center">
                 <h3 className="text-lg font-bold text-secondary dark:text-white">All Vendors ({vendors.length})</h3>
+                <div className="flex bg-surface-muted dark:bg-slate-900/50 p-1 rounded-lg">
+                   <button className="px-3 py-1 text-xs font-bold bg-white dark:bg-slate-800 rounded shadow-sm">All</button>
+                   <button className="px-3 py-1 text-xs font-bold text-slate-400">Active</button>
+                   <button className="px-3 py-1 text-xs font-bold text-slate-400">Blocked</button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
@@ -405,11 +490,17 @@ const AdminDashboard = () => {
                       vendors.map((vendor) => (
                         <tr key={vendor._id} className="hover:bg-surface-muted/50 dark:hover:bg-slate-900/30 transition-colors">
                           <td className="px-6 py-4 text-sm font-bold text-secondary dark:text-white">{vendor.name}</td>
-                          <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{vendor.businessName}</td>
-                          <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{vendor.email}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 font-medium">{vendor.businessName}</td>
+                          <td className="px-6 py-4 text-sm text-slate-500 font-medium">{vendor.email}</td>
                           <td className="px-6 py-4 text-sm text-slate-500">{new Date(vendor.createdAt).toLocaleDateString()}</td>
                           <td className="px-6 py-4 text-right">
-                            <button className="text-sm text-primary hover:text-primary-hover font-semibold">View</button>
+                            <button 
+                              onClick={() => fetchVendorDetails(vendor._id)}
+                              disabled={isVendorLoading}
+                              className="text-sm text-primary hover:text-primary-hover font-bold flex items-center gap-1 ml-auto"
+                            >
+                              {isVendorLoading ? '...' : 'View Details'}
+                            </button>
                           </td>
                         </tr>
                       ))
@@ -419,6 +510,118 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* VENDOR DETAILS VIEW */}
+        {activeSection === 'vendors' && isViewingVendor && selectedVendorDetails && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-6"
+          >
+            <header className="flex items-center gap-4 mb-2">
+              <button 
+                onClick={() => setIsViewingVendor(false)}
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-border dark:border-border-dark shadow-sm hover:text-primary transition-colors"
+              >
+                <ArrowLeft size={18} />
+              </button>
+              <div>
+                <h1 className="text-2xl font-black text-secondary dark:text-white tracking-tight">{selectedVendorDetails.vendor.businessName}</h1>
+                <p className="text-sm text-slate-500 font-medium">Owner: {selectedVendorDetails.vendor.name} • Registered on {new Date(selectedVendorDetails.vendor.createdAt).toLocaleDateString()}</p>
+              </div>
+              <div className="ml-auto flex gap-3">
+                 <button className="btn-secondary btn-sm rounded-xl font-bold bg-white dark:bg-slate-800">Edit Vendor</button>
+                 <button className="px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors">Block Shop</button>
+              </div>
+            </header>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+               <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-border dark:border-border-dark shadow-card">
+                  <p className="text-xs font-bold text-slate-400 uppercase mb-1">Products Listed</p>
+                  <h3 className="text-2xl font-black text-secondary dark:text-white">{selectedVendorDetails.stats.totalProducts}</h3>
+               </div>
+               <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-border dark:border-border-dark shadow-card">
+                  <p className="text-xs font-bold text-slate-400 uppercase mb-1">Total Orders</p>
+                  <h3 className="text-2xl font-black text-secondary dark:text-white">{selectedVendorDetails.stats.totalOrders}</h3>
+               </div>
+               <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-border dark:border-border-dark shadow-card">
+                  <p className="text-xs font-bold text-slate-400 uppercase mb-1">Estimated Revenue</p>
+                  <h3 className="text-2xl font-black text-emerald-500">Rs. {selectedVendorDetails.stats.totalRevenue.toLocaleString()}</h3>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+               {/* Products Table */}
+               <div className="bg-white dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark shadow-card overflow-hidden">
+                  <div className="p-5 border-b border-border dark:border-border-dark bg-surface-muted/30">
+                     <h3 className="font-black text-secondary dark:text-white text-sm uppercase tracking-wider">Product Inventory</h3>
+                  </div>
+                  <div className="overflow-x-auto max-h-[400px]">
+                     <table className="w-full text-left">
+                        <thead className="sticky top-0 bg-white dark:bg-slate-900 text-[10px] font-bold uppercase text-slate-400 border-b border-border dark:border-border-dark">
+                           <tr>
+                              <th className="px-4 py-3">Product</th>
+                              <th className="px-4 py-3">Price</th>
+                              <th className="px-4 py-3 text-right">Stock</th>
+                           </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border dark:divide-border-dark">
+                           {selectedVendorDetails.products.length === 0 ? (
+                              <tr><td colSpan="3" className="px-4 py-10 text-center text-slate-400 text-sm italic">No products uploaded.</td></tr>
+                           ) : (
+                              selectedVendorDetails.products.map(p => (
+                                 <tr key={p._id} className="text-sm hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                                    <td className="px-4 py-3 flex items-center gap-3">
+                                       <img src={p.image} className="w-8 h-8 rounded bg-slate-100 object-cover" />
+                                       <span className="font-bold text-secondary dark:text-white truncate max-w-[120px]">{p.title}</span>
+                                    </td>
+                                    <td className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300">Rs. {p.price}</td>
+                                    <td className="px-4 py-3 text-right">
+                                       <span className={`font-bold ${p.stock < 5 ? 'text-red-500' : 'text-slate-400'}`}>{p.stock}</span>
+                                    </td>
+                                 </tr>
+                              ))
+                           )}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+
+               {/* Associated Orders */}
+               <div className="bg-white dark:bg-surface-dark rounded-2xl border border-border dark:border-border-dark shadow-card overflow-hidden">
+                  <div className="p-5 border-b border-border dark:border-border-dark bg-surface-muted/30">
+                     <h3 className="font-black text-secondary dark:text-white text-sm uppercase tracking-wider">Vendor Orders</h3>
+                  </div>
+                  <div className="overflow-x-auto max-h-[400px]">
+                     <table className="w-full text-left">
+                        <thead className="sticky top-0 bg-white dark:bg-slate-900 text-[10px] font-bold uppercase text-slate-400 border-b border-border dark:border-border-dark">
+                           <tr>
+                              <th className="px-4 py-3">Order ID</th>
+                              <th className="px-4 py-3">Customer</th>
+                              <th className="px-4 py-3 text-right">Status</th>
+                           </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border dark:divide-border-dark">
+                           {selectedVendorDetails.orders.length === 0 ? (
+                              <tr><td colSpan="3" className="px-4 py-10 text-center text-slate-400 text-sm italic">No orders for this vendor yet.</td></tr>
+                           ) : (
+                              selectedVendorDetails.orders.map(o => (
+                                 <tr key={o._id} className="text-sm hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                                    <td className="px-4 py-3 font-bold text-primary">#{o._id.slice(-6).toUpperCase()}</td>
+                                    <td className="px-4 py-3 font-medium text-slate-600 dark:text-slate-300">{o.customer?.name}</td>
+                                    <td className="px-4 py-3 text-right">
+                                       <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-black uppercase border ${getStatusColor(o.status)}`}>{o.status}</span>
+                                    </td>
+                                 </tr>
+                              ))
+                           )}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+          </motion.div>
         )}
 
         {/* CUSTOMERS SECTION */}
@@ -651,31 +854,88 @@ const AdminDashboard = () => {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-border dark:border-border-dark shadow-card">
+              <form onSubmit={handleUpdateSettings} className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-border dark:border-border-dark shadow-card">
                 <h3 className="text-lg font-bold text-secondary dark:text-white mb-4">Commission Settings</h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">Vendor Commission Rate (%)</label>
-                    <input type="number" placeholder="10" className="w-full px-4 py-2 rounded-lg border border-border dark:border-border-dark dark:bg-slate-900 text-secondary dark:text-white" />
+                    <input 
+                      type="number" 
+                      value={platformSettings.commissionRate}
+                      onChange={(e) => setPlatformSettings({...platformSettings, commissionRate: e.target.value})}
+                      placeholder="10" 
+                      className="w-full px-4 py-2 rounded-lg border border-border dark:border-border-dark dark:bg-slate-900 text-secondary dark:text-white" 
+                    />
                   </div>
-                  <button className="w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover transition-colors">
+                  <button type="submit" className="w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover transition-colors">
                     Save Settings
                   </button>
                 </div>
-              </div>
+              </form>
 
               <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-border dark:border-border-dark shadow-card">
                 <h3 className="text-lg font-bold text-secondary dark:text-white mb-4">Email Notifications</h3>
                 <div className="space-y-3">
                   <label className="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="w-4 h-4" />
+                    <input 
+                      type="checkbox" 
+                      checked={platformSettings.sendOrderNotifications}
+                      onChange={(e) => {
+                        const newSettings = {...platformSettings, sendOrderNotifications: e.target.checked};
+                        setPlatformSettings(newSettings);
+                        // Auto-save on toggle if preferred, or just leave it for the button
+                      }}
+                      className="w-4 h-4" 
+                    />
                     <span className="text-sm text-slate-600 dark:text-slate-300">Send order notifications</span>
                   </label>
                   <label className="flex items-center gap-3 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="w-4 h-4" />
+                    <input 
+                      type="checkbox" 
+                      checked={platformSettings.sendVendorUpdates}
+                      onChange={(e) => {
+                        const newSettings = {...platformSettings, sendVendorUpdates: e.target.checked};
+                        setPlatformSettings(newSettings);
+                      }}
+                      className="w-4 h-4" 
+                    />
                     <span className="text-sm text-slate-600 dark:text-slate-300">Send vendor updates</span>
                   </label>
+                  <button 
+                    onClick={handleUpdateSettings}
+                    className="mt-4 w-full px-4 py-2 border border-primary text-primary rounded-lg font-semibold hover:bg-primary/5 transition-colors"
+                  >
+                    Update Preferences
+                  </button>
                 </div>
+              </div>
+
+              <div className="bg-white dark:bg-surface-dark p-6 rounded-2xl border border-border dark:border-border-dark shadow-card md:col-span-2">
+                <h3 className="text-lg font-bold text-secondary dark:text-white mb-4">Advanced Controls</h3>
+                <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-xl">
+                  <div>
+                    <h4 className="font-bold text-red-600 dark:text-red-400 text-sm">Maintenance Mode</h4>
+                    <p className="text-xs text-slate-500 mt-0.5">When active, only admins can access the platform storefront.</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      const mode = !platformSettings.maintenanceMode;
+                      setPlatformSettings({...platformSettings, maintenanceMode: mode});
+                      toast(mode ? 'Maintenance mode will be enabled' : 'Maintenance mode will be disabled');
+                    }}
+                    className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${platformSettings.maintenanceMode ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}
+                  >
+                    {platformSettings.maintenanceMode ? 'Active' : 'Disabled'}
+                  </button>
+                </div>
+                {platformSettings.maintenanceMode && (
+                   <button 
+                   onClick={handleUpdateSettings}
+                   className="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                 >
+                   Confirm & Save Global Changes
+                 </button>
+                )}
               </div>
             </div>
           </div>

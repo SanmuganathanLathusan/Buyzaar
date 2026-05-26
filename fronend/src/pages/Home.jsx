@@ -138,17 +138,16 @@ const Home = () => {
               <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-cyan-400/10 rounded-full blur-2xl" />
             </div>
 
-            <div className="relative z-10 px-8 md:px-12 py-10 max-w-lg">
+            <div className="relative z-20 px-6 md:px-12 py-10 max-w-lg">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-5 border border-primary/20">
                 <Flame className="w-3 h-3" />
                 Limited Time Offer
               </div>
-              <p className="text-slate-500 dark:text-slate-300 text-sm mb-2 font-medium">
-                Up to <span className="text-primary font-extrabold text-2xl">70%</span> OFF on Black Friday
+              <p className="text-white drop-shadow-md sm:drop-shadow-none sm:text-slate-500 dark:sm:text-slate-300 text-sm mb-2 font-bold sm:font-medium">
+                Up to <span className="text-primary font-black sm:font-extrabold text-2xl">70%</span> OFF on Black Friday
               </p>
-              <h1 className="text-4xl md:text-5xl font-black text-secondary dark:text-white leading-[1.1] tracking-tight mb-6">
-                TRENDY{' '}
-                <span className="gradient-text">FASHION</span>
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white sm:text-secondary dark:sm:text-white leading-[1.1] tracking-tight mb-6 drop-shadow-lg sm:drop-shadow-none">
+                TRENDY <span className="gradient-text">FASHION</span>
                 <br />COLLECTION
               </h1>
               <div className="flex items-center gap-3 flex-wrap">
@@ -174,18 +173,17 @@ const Home = () => {
                     </div>
                   ))}
                 </div>
-                <div className="text-sm text-slate-500 dark:text-slate-400">
-                  <span className="font-bold text-secondary dark:text-white">10k+</span> happy customers
+                <div className="text-sm text-white drop-shadow-md sm:drop-shadow-none sm:text-slate-500 dark:sm:text-slate-400 font-bold sm:font-normal">
+                  <span className="font-black sm:font-bold text-white sm:text-secondary dark:sm:text-white">10k+</span> happy customers
                 </div>
               </div>
             </div>
 
-            {/* Hero image */}
-            <div className="absolute right-0 bottom-0 h-full w-1/2 flex justify-end">
+            <div className="absolute inset-0 sm:left-auto sm:right-0 sm:w-1/2 z-10">
               <img
                 src={heroBannerImg}
                 alt="Trendy Fashion Collection"
-                className="h-full object-cover object-right"
+                className="w-full h-full object-cover object-center sm:object-right transition-all duration-500"
               />
             </div>
           </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Search, ShoppingCart, User, Menu, X, ChevronDown,
-  Zap, LayoutGrid, LogOut, LayoutDashboard, Flame
+  Zap, LayoutGrid, LogOut, LayoutDashboard, Flame, Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
@@ -15,18 +15,10 @@ const NAV_LINKS = [
   { to: '/contact',  label: 'Contact' },
 ];
 
-const CATEGORY_LINKS = [
-  { name: 'Fashion',        emoji: '👗', sub: 'Fashion Collection & Beauty' },
-  { name: 'Electronics',    emoji: '💻', sub: 'Electronics & Gadgets' },
-  { name: 'Home & Living',  emoji: '🏠', sub: 'Appliances, Kitchen & Furniture' },
-  { name: 'Food & Grocery', emoji: '🍔', sub: 'Fresh & packaged foods' },
-  { name: 'Toys & Games',   emoji: '🎮', sub: 'Kids toys & board games' },
-];
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery]         = useState('');
   const [isMenuOpen, setIsMenuOpen]           = useState(false);
-  const [isCatOpen, setIsCatOpen]             = useState(false);
   const [isUserOpen, setIsUserOpen]           = useState(false);
   const [isScrolled, setIsScrolled]           = useState(false);
   const [isMobileSearchOpen, setMobileSearch] = useState(false);
@@ -34,7 +26,6 @@ const Navbar = () => {
   const location  = useLocation();
   const { cartCount }   = useCart();
   const { user, logout } = useAuth();
-  const catRef  = useRef(null);
   const userRef = useRef(null);
 
   /* ── scroll shadow ── */
@@ -47,7 +38,6 @@ const Navbar = () => {
   /* ── close dropdowns on outside click ── */
   useEffect(() => {
     const handler = (e) => {
-      if (catRef.current  && !catRef.current.contains(e.target))  setIsCatOpen(false);
       if (userRef.current && !userRef.current.contains(e.target)) setIsUserOpen(false);
     };
     document.addEventListener('mousedown', handler);
@@ -57,7 +47,6 @@ const Navbar = () => {
   /* ── close mobile menu on route change ── */
   useEffect(() => {
     setIsMenuOpen(false);
-    setIsCatOpen(false);
     setIsUserOpen(false);
     setMobileSearch(false);
   }, [location.pathname]);
@@ -74,7 +63,7 @@ const Navbar = () => {
 
   const dashboardPath =
     user?.role === 'vendor' ? '/vendor-dashboard' :
-    user?.role === 'admin'  ? '/admin-dashboard'  : '/user-dashboard';
+    user?.role === 'admin'  ? '/admin'  : '/user-dashboard';
 
   const isActive = (path) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
@@ -94,7 +83,7 @@ const Navbar = () => {
 
         {/* ── Main nav row ── */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 h-16">
+          <div className="flex items-center justify-between gap-4 h-16">
 
             {/* Logo */}
             <Link
@@ -104,60 +93,9 @@ const Navbar = () => {
               <Logo />
             </Link>
 
-            {/* Category Dropdown — desktop */}
-            <div className="relative hidden lg:block flex-shrink-0" ref={catRef}>
-              <button
-                onClick={() => { setIsCatOpen(!isCatOpen); setIsUserOpen(false); }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-200 ${
-                  isCatOpen
-                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/25'
-                    : 'border-border dark:border-border-dark text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary dark:hover:text-primary bg-white dark:bg-slate-900'
-                }`}
-              >
-                <LayoutGrid className="w-4 h-4" />
-                Categories
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCatOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              <AnimatePresence>
-                {isCatOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                    transition={{ duration: 0.18, ease: 'easeOut' }}
-                    className="absolute top-[calc(100%+10px)] left-0 w-64 bg-white dark:bg-slate-900 rounded-2xl border border-border dark:border-border-dark shadow-card-xl overflow-hidden z-50"
-                  >
-                    <div className="p-2">
-                      <div className="px-3 py-2 text-2xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                        Shop by Category
-                      </div>
-                      {CATEGORY_LINKS.map((cat) => (
-                        <Link
-                          key={cat.name}
-                          to={`/products?category=${encodeURIComponent(cat.name)}`}
-                          onClick={() => setIsCatOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/8 hover:text-primary dark:hover:bg-primary/10 dark:hover:text-primary transition-colors group"
-                        >
-                          <span className="text-xl flex-shrink-0">{cat.emoji}</span>
-                          <div className="min-w-0">
-                            <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors">
-                              {cat.name}
-                            </div>
-                            {cat.sub && (
-                              <div className="text-[11px] text-slate-400 truncate">{cat.sub}</div>
-                            )}
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
 
             {/* Search bar — desktop */}
-            <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-xl">
+            <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-2xl mx-auto">
               <div className="relative w-full group">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
                   <Search className="w-4 h-4" />
@@ -189,10 +127,19 @@ const Navbar = () => {
                 <Search className="w-4.5 h-4.5" />
               </button>
 
+              {/* Wishlist */}
+              <Link
+                to="/wishlist"
+                className="flex relative w-10 h-10 items-center justify-center rounded-xl border border-border dark:border-border-dark text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary dark:hover:text-primary transition-all duration-200 hover:-translate-y-0.5 sm:mr-4 mr-1"
+                title="Wishlist"
+              >
+                <Heart className="w-4.5 h-4.5" />
+              </Link>
+
               {/* Cart */}
               <Link
                 to="/cart"
-                className="relative w-10 h-10 flex items-center justify-center rounded-xl border border-border dark:border-border-dark text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary dark:hover:text-primary transition-all duration-200 hover:-translate-y-0.5"
+                className="relative w-10 h-10 flex items-center justify-center rounded-xl border border-border dark:border-border-dark text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary dark:hover:text-primary transition-all duration-200 hover:-translate-y-0.5 sm:mr-4 mr-1"
               >
                 <ShoppingCart className="w-4.5 h-4.5" />
                 <AnimatePresence>
@@ -365,27 +312,14 @@ const Navbar = () => {
                     {link.label}
                   </Link>
                 ))}
-                <div className="pt-2 border-t border-border dark:border-border-dark">
-                  <div className="text-2xs font-bold uppercase tracking-widest text-slate-400 px-4 py-2">Categories</div>
-                  <div className="space-y-1">
-                    {CATEGORY_LINKS.map((cat) => (
-                      <Link
-                        key={cat.name}
-                        to={`/products?category=${encodeURIComponent(cat.name)}`}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/8 hover:text-primary transition-colors group"
-                      >
-                        <span className="text-xl flex-shrink-0">{cat.emoji}</span>
-                        <div>
-                          <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors">
-                            {cat.name}
-                          </div>
-                          {cat.sub && (
-                            <div className="text-[11px] text-slate-400">{cat.sub}</div>
-                          )}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
+                <div className="pt-2 border-t border-border dark:border-border-dark mt-2">
+                  <Link
+                    to="/wishlist"
+                    className="flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <Heart className="w-4.5 h-4.5 text-primary" />
+                    My Wishlist
+                  </Link>
                 </div>
               </div>
             </motion.div>

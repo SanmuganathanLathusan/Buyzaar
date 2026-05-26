@@ -32,6 +32,7 @@ const registerUser = async (req, res) => {
         email: user.email,
         role: user.role,
         businessName: user.businessName,
+        profilePhoto: user.profilePhoto,
         token: generateToken(user._id)
       });
     } else {
@@ -58,6 +59,7 @@ const authUser = async (req, res) => {
         email: user.email,
         role: user.role,
         businessName: user.businessName,
+        profilePhoto: user.profilePhoto,
         token: generateToken(user._id)
       });
     } else {
@@ -82,7 +84,9 @@ const getUserProfile = async (req, res) => {
       role: user.role,
       businessName: user.businessName,
       phone: user.phone,
-      address: user.address
+      profilePhoto: user.profilePhoto,
+      address: user.address,
+      paymentMethods: user.paymentMethods || []
     });
   } else {
     res.status(404).json({ message: 'User not found' });
@@ -100,6 +104,7 @@ const updateUserProfile = async (req, res) => {
       // Update basic fields
       if (req.body.name) user.name = req.body.name;
       if (req.body.phone) user.phone = req.body.phone;
+      if (req.body.profilePhoto !== undefined) user.profilePhoto = req.body.profilePhoto;
       
       // Update address as nested object
       if (req.body.address) {
@@ -124,7 +129,9 @@ const updateUserProfile = async (req, res) => {
         role: updatedUser.role,
         businessName: updatedUser.businessName,
         phone: updatedUser.phone,
+        profilePhoto: updatedUser.profilePhoto,
         address: updatedUser.address,
+        paymentMethods: updatedUser.paymentMethods || [],
         token: generateToken(updatedUser._id),
       });
     } else {
@@ -270,4 +277,69 @@ const googleAuth = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, authUser, getUserProfile, updateUserProfile, forgotPassword, resetPassword, googleAuth };
+// @desc    Add payment method
+// @route   POST /api/auth/payment-methods
+// @access  Private
+const addPaymentMethod = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const { cardType, last4, expMonth, expYear, cardHolderName, isDefault } = req.body;
+
+    // If isDefault is true, unset other defaults
+    if (isDefault) {
+      user.paymentMethods.forEach(m => m.isDefault = false);
+    }
+
+    user.paymentMethods.push({
+      cardType,
+      last4,
+      expMonth,
+      expYear,
+      cardHolderName,
+      isDefault: isDefault || user.paymentMethods.length === 0
+    });
+
+    await user.save();
+    res.status(201).json(user.paymentMethods);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete payment method
+// @route   DELETE /api/auth/payment-methods/:id
+// @access  Private
+const deletePaymentMethod = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.paymentMethods = user.paymentMethods.filter(
+      (m) => m._id.toString() !== req.params.id
+    );
+
+    // If we deleted the default, set another one if exists
+    if (user.paymentMethods.length > 0 && !user.paymentMethods.some(m => m.isDefault)) {
+      user.paymentMethods[0].isDefault = true;
+    }
+
+    await user.save();
+    res.json(user.paymentMethods);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  registerUser,
+  authUser,
+  getUserProfile,
+  updateUserProfile,
+  forgotPassword,
+  resetPassword,
+  googleAuth,
+  addPaymentMethod,
+  deletePaymentMethod
+};
