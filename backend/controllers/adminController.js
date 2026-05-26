@@ -1,5 +1,7 @@
 const Order = require('../models/Order');
 const User = require('../models/User');
+const Product = require('../models/Product');
+const Settings = require('../models/Settings');
 
 // @desc    Get complete admin dashboard analytics
 // @route   GET /api/admin/dashboard
@@ -137,11 +139,102 @@ const updateCustomerStatus = async (req, res) => {
   }
 };
 
+// @desc    Get platform settings
+// @route   GET /api/admin/settings
+// @access  Private/Admin
+const getPlatformSettings = async (req, res) => {
+  try {
+    let settings = await Settings.findOne();
+    if (!settings) {
+      settings = await Settings.create({}); // Create default settings
+    }
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update platform settings
+// @route   PUT /api/admin/settings
+// @access  Private/Admin
+const updatePlatformSettings = async (req, res) => {
+  try {
+    const { commissionRate, sendOrderNotifications, sendVendorUpdates, maintenanceMode } = req.body;
+    let settings = await Settings.findOne();
+    
+    if (settings) {
+      settings.commissionRate = commissionRate !== undefined ? commissionRate : settings.commissionRate;
+      settings.sendOrderNotifications = sendOrderNotifications !== undefined ? sendOrderNotifications : settings.sendOrderNotifications;
+      settings.sendVendorUpdates = sendVendorUpdates !== undefined ? sendVendorUpdates : settings.sendVendorUpdates;
+      settings.maintenanceMode = maintenanceMode !== undefined ? maintenanceMode : settings.maintenanceMode;
+      
+      const updatedSettings = await settings.save();
+      res.json(updatedSettings);
+    } else {
+      const newSettings = await Settings.create(req.body);
+      res.status(201).json(newSettings);
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get detailed vendor info (products, orders)
+// @route   GET /api/admin/vendors/:id
+// @access  Private/Admin
+const getVendorDetails = async (req, res) => {
+  try {
+    const vendorId = req.params.id;
+    
+    // 1. Get Vendor Info
+    const vendor = await User.findById(vendorId).select('-password');
+    if (!vendor || vendor.role !== 'vendor') {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+
+    // 2. Get Vendor Products
+    const products = await Product.find({ vendor: vendorId }).sort({ createdAt: -1 });
+
+    // 3. Get Orders containing these products
+    // This is a bit expensive but necessary given the schema
+    const productIds = products.map(p => p._id);
+    const orders = await Order.find({
+      'orderItems.product': { $in: productIds }
+    }).populate('customer', 'name email').sort({ createdAt: -1 });
+
+    // 4. Calculate stats
+    const totalRevenue = orders.reduce((acc, order) => {
+      // Only count items belonging to this vendor
+      const vendorItems = order.orderItems.filter(item => 
+        productIds.some(pid => pid.equals(item.product))
+      );
+      return acc + vendorItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    }, 0);
+
+    res.json({
+      vendor,
+      products,
+      orders,
+      stats: {
+        totalProducts: products.length,
+        totalOrders: orders.length,
+        totalRevenue
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = { 
   getAdminDashboardData,
   getAllVendors,
   getAllCustomers,
   getAdminOrders,
   updateVendorStatus,
-  updateCustomerStatus
+  updateCustomerStatus,
+  getPlatformSettings,
+  updatePlatformSettings,
+  getVendorDetails
 };
