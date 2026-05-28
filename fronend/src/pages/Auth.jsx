@@ -483,7 +483,7 @@ const Auth = () => {
                     </button>
                   </Field>
 
-                  {isLogin && userType !== 'vendor' && (
+                  {isLogin && (
                     <div className="flex justify-end -mt-1">
                       <button
                         type="button"
