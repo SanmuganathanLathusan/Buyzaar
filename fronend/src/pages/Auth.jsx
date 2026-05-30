@@ -399,11 +399,11 @@ const Auth = () => {
                   />
                 </Field>
                 <Field label="Email Address" icon={Mail}>
-                  <input
-                    type="email" name="email" required
-                    value={vendorRequestData.email} onChange={handleVendorInputChange}
-                    className={inputCls} placeholder="e.g. contact@acme.com"
-                  />
+                    <input
+                      type="email" name="email" required
+                      value={vendorRequestData.email} onChange={handleVendorInputChange}
+                      className={inputCls} placeholder="business@example.com"
+                    />
                 </Field>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -463,7 +463,7 @@ const Auth = () => {
                     <input
                       type="email" name="email" required
                       value={formData.email} onChange={handleInputChange}
-                      className={inputCls} placeholder="lathu@example.com"
+                      className={inputCls} placeholder="your.email@example.com"
                     />
                   </Field>
 

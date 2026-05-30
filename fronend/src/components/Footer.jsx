@@ -11,8 +11,8 @@ const FOOTER_LINKS = {
   Company: [
     { label: 'About Us',   to: '/contact' },
     { label: 'Contact',    to: '/contact' },
-    { label: 'Careers',    to: '/'        },
-    { label: 'Press',      to: '/'        },
+    { label: 'Privacy Policy', to: '/privacy' },
+    { label: 'Terms of Use',   to: '/terms'   },
   ],
   Shopping: [
     { label: 'All Products',  to: '/products'                               },

@@ -310,20 +310,32 @@ const Checkout = () => {
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="p-4 bg-surface-muted dark:bg-slate-800/50 rounded-2xl border border-border dark:border-border-dark space-y-3 mb-4">
-                            <FormField label="Card Number" icon={CreditCard} required>
-                              <input name="cardNumber" value={formData.cardNumber} onChange={handleChange}
-                                placeholder="1234 5678 9012 3456" className={inputCls(true)} maxLength={19} />
-                            </FormField>
-                            <div className="grid grid-cols-2 gap-3">
-                              <FormField label="Expiry" required>
-                                <input name="cardExpiry" value={formData.cardExpiry} onChange={handleChange}
-                                  placeholder="MM / YY" className={inputCls(false)} maxLength={7} />
+                          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800 space-y-4 mb-4">
+                            <div className="flex items-start gap-3">
+                              <ShieldCheck className="w-5 h-5 text-blue-600 mt-0.5" />
+                              <div>
+                                <h4 className="text-sm font-bold text-blue-900 dark:text-blue-300">Test / Demo Mode</h4>
+                                <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
+                                  This is a demo project. Do not enter real payment information. For testing, you can use any dummy data below.
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-3 pt-2">
+                              <FormField label="Card Number (Test Only)" icon={CreditCard} required>
+                                <input name="cardNumber" value={formData.cardNumber} onChange={handleChange}
+                                  placeholder="0000 0000 0000 0000" className={inputCls(true)} maxLength={19} />
                               </FormField>
-                              <FormField label="CVC" icon={Lock} required>
-                                <input name="cardCvc" value={formData.cardCvc} onChange={handleChange}
-                                  placeholder="•••" className={inputCls(true)} maxLength={4} type="password" />
-                              </FormField>
+                              <div className="grid grid-cols-2 gap-3">
+                                <FormField label="Expiry" required>
+                                  <input name="cardExpiry" value={formData.cardExpiry} onChange={handleChange}
+                                    placeholder="MM / YY" className={inputCls(false)} maxLength={7} />
+                                </FormField>
+                                <FormField label="CVC" icon={Lock} required>
+                                  <input name="cardCvc" value={formData.cardCvc} onChange={handleChange}
+                                    placeholder="000" className={inputCls(true)} maxLength={4} type="password" />
+                                </FormField>
+                              </div>
                             </div>
                           </div>
                         </motion.div>

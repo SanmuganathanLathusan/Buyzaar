@@ -13,6 +13,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import Contact from './pages/Contact';
 import Wishlist from './pages/Wishlist';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 import ScrollToTop from './components/ScrollToTop';
 import { Toaster } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
@@ -65,6 +67,8 @@ function AppInner() {
           <Route path="/admin"                    element={<AdminDashboard />} />
           <Route path="/user-dashboard"           element={<UserDashboard />}  />
           <Route path="/wishlist"                 element={<Wishlist />}       />
+          <Route path="/privacy"                  element={<PrivacyPolicy />}  />
+          <Route path="/terms"                    element={<TermsOfService />} />
         </Routes>
       </main>
 
