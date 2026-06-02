@@ -240,29 +240,7 @@ PUT /api/users/profile
 
 ---
 
-## 📸 Screenshots
 
-Add screenshots of your application:
-
-* Home Page
-* Product Listing Page
-* Product Details Page
-* Shopping Cart
-* Vendor Dashboard
-* Admin Dashboard
-* Order Management Page
-
-Example:
-
-```md
-![Home Page](screenshots/home.png)
-
-![Vendor Dashboard](screenshots/vendor-dashboard.png)
-
-![Admin Dashboard](screenshots/admin-dashboard.png)
-```
-
----
 
 ## 🚀 Deployment
 
@@ -346,16 +324,9 @@ git push origin feature/new-feature
 🐙 GitHub: https://github.com/SanmuganathanLathusan
 
 💼 LinkedIn: https://www.linkedin.com/in/lathusan-shanmuganathan-90b89b372/
-🌐 Portfolio:lathusan.me
+🌐 Portfolio:https://www.lathusan.me/
 
 ---
 
-## ⭐ Support
-
-If you found this project useful, please consider giving it a ⭐ on GitHub.
-
----
-
-## 📄 License
 
 This project is licensed under the MIT License.
