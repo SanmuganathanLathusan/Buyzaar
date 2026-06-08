@@ -6,7 +6,7 @@ A modern full-stack **MERN Stack Multi-Vendor E-Commerce Platform** that connect
 
 ## 🌐 Live Demo
 
-🔗 **Live Application:** [https://buyzaar-kp8n.vercel.app/]
+🔗 **Live Application:** [https://buyzaareu.vercel.app/]
 
 🔗 **GitHub Repository:** https://github.com/SanmuganathanLathusan/Buyzaar
 
