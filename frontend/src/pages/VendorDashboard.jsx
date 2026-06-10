@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Package, ShoppingBag, DollarSign, Users, Settings, LogOut, TrendingUp, AlertCircle, Plus, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { fetchWithAuth } from '../utils/api';
+import { fetchWithAuth, API_BASE } from '../utils/api';
 import toast from 'react-hot-toast';
 
 const inputCls =
@@ -140,7 +140,7 @@ const VendorDashboard = () => {
 
     const toastId = toast.loading('Uploading image...');
     try {
-      const res = await fetch('/api/upload', {
+      const res = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
