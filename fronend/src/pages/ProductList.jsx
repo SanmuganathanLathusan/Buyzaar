@@ -124,6 +124,9 @@ const ProductList = () => {
 
   const filteredProducts = useMemo(() => {
     let arr = products.filter((p) => {
+      // Hide products without images
+      if (!p.image || p.image.includes('placeholder') || p.image.includes('placehold.co')) return false;
+
       if (priceRange !== 500000 && p.price > priceRange) return false;
       // If searching and a specific tab is chosen, filter by that category
       if (searchQuery && searchCatTab !== '__all__' && p.category !== searchCatTab) return false;
