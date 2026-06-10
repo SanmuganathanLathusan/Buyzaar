@@ -88,6 +88,8 @@ const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const vendorAccessRoutes = require('./routes/vendorAccessRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
+const path = require('path');
 
 // ────────────────────────────────────────────────────────────────────────────
 // Health Check
@@ -108,6 +110,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/vendor-access', vendorAccessRoutes);
+app.use('/api/upload', uploadRoutes);
+
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 // ────────────────────────────────────────────────────────────────────────────
 // 404 Handler
