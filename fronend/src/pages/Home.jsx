@@ -276,7 +276,7 @@ const Home = () => {
             viewport={{ once: true, margin: '-60px' }}
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
           >
-            {PRODUCTS.slice(0, visibleCount).map((product, idx) => (
+            {PRODUCTS.filter(p => p.image).slice(0, visibleCount).map((product, idx) => (
               <motion.div key={`featured-${product.id || product._id}-${idx}`} variants={itemVariants}>
                 <ProductCard product={product} />
               </motion.div>
