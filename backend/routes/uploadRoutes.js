@@ -30,9 +30,15 @@ router.post('/', protect, vendor, upload.array('images', 5), async (req, res) =>
     const uploadToCloudinary = (fileBuffer) => {
       return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: 'buyzaar_products' },
+          { 
+            folder: 'buyzaar_products',
+            resource_type: 'auto'
+          },
           (error, result) => {
-            if (error) reject(error);
+            if (error) {
+              console.error('Detailed Cloudinary Error:', JSON.stringify(error, null, 2));
+              reject(error);
+            }
             else resolve(result.secure_url);
           }
         );
