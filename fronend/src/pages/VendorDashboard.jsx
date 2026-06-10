@@ -19,7 +19,7 @@ const VendorDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const [newProduct, setNewProduct] = useState({
-    title: '', description: '', price: '', originalPrice: '', discount: '', category: 'Mobiles', image: '', stock: ''
+    title: '', description: '', price: '', originalPrice: '', discount: '', category: 'Mobiles', image: '', images: ['', '', ''], stock: ''
   });
 
   useEffect(() => {
@@ -107,6 +107,8 @@ const VendorDashboard = () => {
         originalPrice: Number(newProduct.originalPrice) || 0,
         discount: Number(newProduct.discount) || 0,
         stock: Number(newProduct.stock),
+        images: newProduct.images.filter(img => img.trim() !== ''),
+        image: newProduct.images[0] || newProduct.image 
       };
 
       const res = await fetchWithAuth('/api/products', {
@@ -116,7 +118,7 @@ const VendorDashboard = () => {
 
       if (res.ok) {
         setIsModalOpen(false);
-        setNewProduct({ title: '', description: '', price: '', originalPrice: '', discount: '', category: 'Mobiles', image: '', stock: '' });
+        setNewProduct({ title: '', description: '', price: '', originalPrice: '', discount: '', category: 'Mobiles', image: '', images: ['', '', ''], stock: '' });
         toast.success('Product created successfully!');
         fetchDashboardData();
       } else {
@@ -126,6 +128,41 @@ const VendorDashboard = () => {
     } catch (error) {
       console.error('Failed to create product:', error);
       toast.error('Failed to connect to server');
+    }
+  };
+
+  const handleImageUpload = async (e, index) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('images', file);
+
+    const toastId = toast.loading('Uploading image...');
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const uploadedUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${data.urls[0]}`;
+        
+        const updatedImages = [...newProduct.images];
+        updatedImages[index] = uploadedUrl;
+        setNewProduct({ ...newProduct, images: updatedImages });
+        
+        toast.success('Image uploaded successfully', { id: toastId });
+      } else {
+        toast.error('Upload failed', { id: toastId });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Connect error during upload', { id: toastId });
     }
   };
 
@@ -679,18 +716,55 @@ const VendorDashboard = () => {
                     />
                   </div>
 
-                  <div className="md:col-span-2 space-y-1.5">
+                  <div className="md:col-span-2 space-y-3">
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Image URL *
+                      Product Images (Up to 3) *
                     </label>
-                    <input
-                      type="url"
-                      required
-                      value={newProduct.image}
-                      onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-                      className={inputCls}
-                      placeholder="https://example.com/image.jpg"
-                    />
+                    <div className="grid grid-cols-1 gap-4">
+                      {[0, 1, 2].map((idx) => (
+                        <div key={idx} className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="text"
+                              required={idx === 0}
+                              value={newProduct.images[idx]}
+                              onChange={(e) => {
+                                const updatedImages = [...newProduct.images];
+                                updatedImages[idx] = e.target.value;
+                                setNewProduct({ ...newProduct, images: updatedImages });
+                              }}
+                              className={`${inputCls} flex-1`}
+                              placeholder={`Image URL ${idx + 1}${idx === 0 ? ' (Main)' : ''}`}
+                            />
+                            <label className="flex-shrink-0 cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary px-4 py-3 rounded-xl border border-primary/20 transition-colors text-sm font-bold">
+                              <span>Upload</span>
+                              <input 
+                                type="file" 
+                                className="hidden" 
+                                accept="image/*"
+                                onChange={(e) => handleImageUpload(e, idx)} 
+                              />
+                            </label>
+                          </div>
+                          {newProduct.images[idx] && (
+                            <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-border dark:border-border-dark group">
+                              <img src={newProduct.images[idx]} className="w-full h-full object-cover" alt="Preview" />
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  const updatedImages = [...newProduct.images];
+                                  updatedImages[idx] = '';
+                                  setNewProduct({ ...newProduct, images: updatedImages });
+                                }}
+                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X size={16} className="text-white" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
