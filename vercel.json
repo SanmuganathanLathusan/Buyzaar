@@ -26,20 +26,12 @@
       "dest": "backend/server.js"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "fronend/assets/$1"
-    },
-    {
-      "src": "/((?!api|uploads|assets).*)",
-      "dest": "fronend/$1",
-      "continue": true
-    },
-    {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "fronend/index.html"
+      "dest": "/index.html"
     }
   ]
 }
+
