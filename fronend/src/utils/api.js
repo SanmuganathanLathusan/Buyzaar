@@ -1,7 +1,8 @@
 // Helper utility for making API requests with JWT Auth headers
 
 // Use VITE_API_URL when provided. Otherwise fall back to the local backend in dev.
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_URL || 
+  (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000' : '');
 
 export const fetchWithAuth = async (url, options = {}) => {
   let endpoint = url;
