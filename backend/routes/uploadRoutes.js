@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
+const { protect, vendor } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // Configure Cloudinary
@@ -19,7 +20,7 @@ const upload = multer({ storage });
  * @route   POST /api/upload
  * @access  Private/Vendor
  */
-router.post('/', upload.array('images', 5), async (req, res) => {
+router.post('/', protect, vendor, upload.array('images', 5), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'No images provided for upload' });
@@ -51,7 +52,8 @@ router.post('/', upload.array('images', 5), async (req, res) => {
     console.error('Cloudinary Upload Error:', error);
     res.status(500).json({ 
       message: 'Failed to upload images to cloud storage',
-      error: error.message 
+      error: error.message || error,
+      details: error
     });
   }
 });
