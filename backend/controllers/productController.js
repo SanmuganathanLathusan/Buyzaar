@@ -69,10 +69,25 @@ const getProductById = async (req, res) => {
 // @access  Private/Vendor
 const createProduct = async (req, res) => {
   try {
-    const { title, description, price, originalPrice, discount, category, image, stock } = req.body;
+    const { title, description, price, originalPrice, discount, category, image, images, stock } = req.body;
+
+    if (!image || (!image.startsWith('http') && !image.startsWith('/uploads'))) {
+      return res.status(400).json({ message: 'A valid image URL or upload is required' });
+    }
+
+    // Check if a product with the same title already exists for this vendor
+    const productExists = await Product.findOne({ 
+      vendor: req.user._id, 
+      title: { $regex: new RegExp(`^${title.trim()}$`, 'i') } 
+    });
+
+    if (productExists) {
+      return res.status(400).json({ message: 'A product with this title already exists in your store' });
+    }
+
     const product = new Product({
       vendor: req.user._id,
-      title, description, price, originalPrice, discount, category, image, stock
+      title, description, price, originalPrice, discount, category, image, images, stock
     });
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
