@@ -1,13 +1,45 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "builds": [],
-  "routes": [],
-  "projects": {
-    "default": {
-      "path": "./fronend",
-      "command": "npm run build",
-      "outputDirectory": "dist"
+  "builds": [
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "nodeVersion": "20.x"
+      }
+    },
+    {
+      "src": "fronend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     }
-  }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "backend/server.js"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "fronend/assets/$1"
+    },
+    {
+      "src": "/((?!api|uploads|assets).*)",
+      "dest": "fronend/$1",
+      "continue": true
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "fronend/index.html"
+    }
+  ]
 }
