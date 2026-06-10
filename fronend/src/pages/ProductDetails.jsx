@@ -144,7 +144,7 @@ const ProductDetails = () => {
   }
 
   const brand = product.vendor?.businessName || 'Buyzaar Vendor';
-  const images = [product.image];
+  const images = (product.images && product.images.length > 0) ? product.images : [product.image];
   const savings = product.originalPrice ? product.originalPrice - product.price : 0;
 
   return (
