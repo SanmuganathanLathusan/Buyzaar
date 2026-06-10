@@ -140,7 +140,7 @@ const VendorDashboard = () => {
 
     const toastId = toast.loading('Uploading image...');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload`, {
+      const res = await fetch('/api/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -150,7 +150,8 @@ const VendorDashboard = () => {
 
       if (res.ok) {
         const data = await res.json();
-        const uploadedUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${data.urls[0]}`;
+        // data.urls[0] is now a full Cloudinary URL
+        const uploadedUrl = data.urls[0];
         
         const updatedImages = [...newProduct.images];
         updatedImages[index] = uploadedUrl;

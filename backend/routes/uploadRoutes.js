@@ -1,45 +1,59 @@
-const path = require('path');
 const express = require('express');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 const router = express.Router();
 
-const storage = multer.memoryStorage();
-
-function checkFileType(file, cb) {
-  const filetypes = /jpg|jpeg|png/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (extname && mimetype) {
-    return cb(null, true);
-  } else {
-    cb('Images only!');
-  }
-}
-
-const upload = multer({
-  storage,
-  fileFilter: function (req, file, cb) {
-    checkFileType(file, cb);
-  },
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-router.post('/', upload.array('images', 3), (req, res) => {
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ message: 'No files uploaded' });
+// Configure Multer to use memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+/**
+ * @desc    Upload multiple images to Cloudinary
+ * @route   POST /api/upload
+ * @access  Private/Vendor
+ */
+router.post('/', upload.array('images', 5), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'No images provided for upload' });
+    }
+
+    // Helper function to handle the stream upload to Cloudinary
+    const uploadToCloudinary = (fileBuffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'buyzaar_products' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
+          }
+        );
+        stream.end(fileBuffer);
+      });
+    };
+
+    // Upload all files in parallel
+    const uploadPromises = req.files.map(file => uploadToCloudinary(file.buffer));
+    const imageUrls = await Promise.all(uploadPromises);
+
+    res.status(200).json({
+      message: 'Images uploaded successfully to Cloudinary',
+      urls: imageUrls,
+    });
+  } catch (error) {
+    console.error('Cloudinary Upload Error:', error);
+    res.status(500).json({ 
+      message: 'Failed to upload images to cloud storage',
+      error: error.message 
+    });
   }
-
-  // If on Vercel, we should be uploading to Cloudinary here
-  // For now, we return a success message with mock URLs to prevent 500
-  const filePaths = req.files.map(file => {
-    // In a real scenario, this would be the Cloudinary URL
-    return `https://placehold.co/600x400?text=Uplaoded+${file.originalname}`;
-  });
-
-  res.send({
-    message: 'Images received (Memory Buffer). PERSISTENCE REQUIRES CLOUDINARY ON VERCEL.',
-    urls: filePaths
-  });
 });
 
 module.exports = router;

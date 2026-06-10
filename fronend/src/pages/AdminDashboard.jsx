@@ -9,7 +9,8 @@ import toast from 'react-hot-toast';
 const AdminDashboard = () => {
   const { logout, token, user } = useAuth();
   const navigate = useNavigate();
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_BASE = import.meta.env.VITE_API_URL || 
+    (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000' : '');
 
   // State Management
   const [activeSection, setActiveSection] = useState('overview');
